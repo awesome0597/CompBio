@@ -15,6 +15,17 @@ import matplotlib.image as mpimg
 import matplotlib.font_manager as font_manager
 
 
+class Game:
+    def __init__(self, grid):
+        self.grid = grid
+
+    def run(self):
+        for i in range(100):
+            for j in range(100):
+                if self.grid.grid[i, j] == 1:
+                    self.grid.people_grid[i, j].spread(self.grid.people_grid, self.grid.n)
+
+
 class Grid:
     """
     class that creates a grid of people and assigns suspicion levels to each person
@@ -39,7 +50,7 @@ class Grid:
         # a grid
         self.grid = np.zeros((n, n))
         self.suspicion_grid = np.zeros((n, n))
-        self.people_grid = np.zeros((n, n))
+        self.people_grid = np.empty((n, n), dtype=object)
         # create lists for each group
         self.group_1 = []
         self.group_2 = []
@@ -110,20 +121,24 @@ class Grid:
         select a random person from each group to be the rumor spreader and set their suspicion level to 1
         """
         # select a random person from each group to be the rumor spreader
-        self.rumor_spreader_1 = random.choice(self.group_1).rumor_starter()
-        self.rumor_spreader_2 = random.choice(self.group_2).rumor_starter()
-        self.rumor_spreader_3 = random.choice(self.group_3).rumor_starter()
-        self.rumor_spreader_4 = random.choice(self.group_4).rumor_starter()
+        self.rumor_spreader_1 = random.choice(self.group_1)
+        self.rumor_spreader_1.rumor_starter()
+        self.rumor_spreader_2 = random.choice(self.group_2)
+        self.rumor_spreader_2.rumor_starter()
+        self.rumor_spreader_3 = random.choice(self.group_3)
+        self.rumor_spreader_3.rumor_starter()
+        self.rumor_spreader_4 = random.choice(self.group_4)
+        self.rumor_spreader_4.rumor_starter()
 
     def spread_rumor(self):
         """
         spread rumor to neighbors
         """
         # spread rumor to neighbors
-        self.rumor_spreader_1.spread_rumor()
-        self.rumor_spreader_2.spread_rumor()
-        self.rumor_spreader_3.spread_rumor()
-        self.rumor_spreader_4.spread_rumor()
+        self.rumor_spreader_1.spread(self.people_grid, self.n)
+        self.rumor_spreader_2.spread(self.people_grid, self.n)
+        self.rumor_spreader_3.spread(self.people_grid, self.n)
+        self.rumor_spreader_4.spread(self.people_grid, self.n)
 
 
 class Person:
@@ -190,7 +205,7 @@ class Person:
         if self.sum_of_suspicion > 1:
             self.sum_of_suspicion = 1
 
-    def spread(self, grid, n, L):
+    def spread(self, grid, n):
         if self.rumor_received:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
@@ -209,16 +224,18 @@ class Person:
 
 # create main function that asks user for input and runs the simulation
 def main():
-    # get user input
-    n = int(input("Enter the size of the grid: "))
-    p = float(input("Enter the p(population density): "))
-    s1 = float(input("Enter the percentage of S1: "))
-    s2 = float(input("Enter the percentage of S2: "))
-    s3 = float(input("Enter the percentage of S3: "))
-    # L = int(input("Enter the number of generations of silence: "))
+    # # get user input
+    # n = int(input("Enter the size of the grid: "))
+    # p = float(input("Enter the p(population density): "))
+    # s1 = float(input("Enter the percentage of S1: "))
+    # s2 = float(input("Enter the percentage of S2: "))
+    # s3 = float(input("Enter the percentage of S3: "))
+    # # L = int(input("Enter the number of generations of silence: "))
+    #
+    # # create grid object
+    # grid = Grid(n, p, s1, s2, s3)
 
-    # create grid object
-    grid = Grid(n, p, s1, s2, s3)
+    grid = Grid(100, 0.7, 0.5, 0.2, 0.2)
     # create grid
     grid.create_grid()
     # create suspicion grid
@@ -226,4 +243,12 @@ def main():
     # create rumor spreaders
     grid.create_rumor_spreader()
     # spread rumor
+    grid.spread_rumor()
+    # create game
+    game = Game(grid)
+    # start running
+    game.run()
 
+
+if __name__ == "__main__":
+    main()
