@@ -13,7 +13,6 @@ import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 import matplotlib.image as mpimg
 import matplotlib.font_manager as font_manager
-import matplotlib.patheffects as path_effects
 
 
 class Grid:
@@ -21,7 +20,7 @@ class Grid:
     class that creates a grid of people and assigns suspicion levels to each person
     """
 
-    def __init__(self, n, p, distribution_of_group_1, distribution_of_group_2, distribution_of_group_3, L):
+    def __init__(self, n, p, distribution_of_group_1, distribution_of_group_2, distribution_of_group_3):
         """
         :param n: size of grid
         :param p: probability of a person existing in a cell
@@ -35,7 +34,7 @@ class Grid:
         self.s1 = distribution_of_group_1
         self.s2 = distribution_of_group_2
         self.s3 = distribution_of_group_3
-        self.L = L
+        # self.L = L
         # create grid, suspicion grid, and people grid. ****** possibly easier to make a 3D tensor where each layer is
         # a grid
         self.grid = np.zeros((n, n))
@@ -116,6 +115,16 @@ class Grid:
         self.rumor_spreader_3 = random.choice(self.group_3).rumor_starter()
         self.rumor_spreader_4 = random.choice(self.group_4).rumor_starter()
 
+    def spread_rumor(self):
+        """
+        spread rumor to neighbors
+        """
+        # spread rumor to neighbors
+        self.rumor_spreader_1.spread_rumor()
+        self.rumor_spreader_2.spread_rumor()
+        self.rumor_spreader_3.spread_rumor()
+        self.rumor_spreader_4.spread_rumor()
+
 
 class Person:
     """
@@ -134,13 +143,10 @@ class Person:
         self.rumor_spread = False
         self.sum_of_suspicion = 0
         self.__suspicion = 0
-        self.generation = 0
+        # self.generation = 0
 
-    def get_x(self):
-        return self.__i
-
-    def get_y(self):
-        return self.__j
+    def get_location(self):
+        return self.__i, self.__j
 
     def get_suspicion(self):
         return self.__suspicion
@@ -161,24 +167,44 @@ class Person:
         if suspicion_level == 1:
             self.__suspicion = 1
         elif suspicion_level == 2:
-            self.__suspicion = 2
+            self.__suspicion = 2 / 3
         elif suspicion_level == 3:
-            self.__suspicion = 3
+            self.__suspicion = 1 / 3
         elif suspicion_level == 4:
-            self.__suspicion = 4
+            self.__suspicion = 0
+
+    def receive_rumor(self):
+        """
+        function for when a person receives a rumor
+        """
+        self.rumor_received = True
+        self.belief_increase()
+
+    def belief_increase(self):
+        """
+        function for when a person receives a rumor
+        """
+        # raise the sum of suspicion by the suspicion level of the person who spread the rumor, if sum of suspicion
+        # is more than 1, set it to 1
+        self.sum_of_suspicion += self.__suspicion
+        if self.sum_of_suspicion > 1:
+            self.sum_of_suspicion = 1
 
     def spread(self, grid, n, L):
         if self.rumor_received:
-            if self.sum_of_suspicion > 0:
-                if not self.rumor_spread:
-                    self.rumor_spread = True
-                    self.generation = Person.generation + L
+            # can spread rumor if generation equals 0
+            # if self.generation == 0:
+            if not self.rumor_spread:
+                if random.random() < self.sum_of_suspicion:
                     for i in range(-1, 2):
                         for j in range(-1, 2):
                             if 0 <= self.i + i < n and 0 <= self.j + j < n and not (i == 0 and j == 0):
-                                grid[self.i + i, self.j + j].receive_rumor(self.belief_increase)
-            else:
+                                grid[self.i + i, self.j + j].receive_rumor()
+                self.rumor_spread = True
+                # self.generation = L
                 self.rumor_received = False
+            # else:
+            #     self.generation -= 1  # decrement generation
 
 
 # create main function that asks user for input and runs the simulation
@@ -189,13 +215,15 @@ def main():
     s1 = float(input("Enter the percentage of S1: "))
     s2 = float(input("Enter the percentage of S2: "))
     s3 = float(input("Enter the percentage of S3: "))
-    L = int(input("Enter the number of generations of silence: "))
+    # L = int(input("Enter the number of generations of silence: "))
 
     # create grid object
-    grid = Grid(n, p, s1, s2, s3, L)
+    grid = Grid(n, p, s1, s2, s3)
     # create grid
     grid.create_grid()
     # create suspicion grid
     grid.create_suspicion_grid()
     # create rumor spreaders
     grid.create_rumor_spreader()
+    # spread rumor
+
