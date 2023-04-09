@@ -20,7 +20,11 @@ class Game(tk.Tk):
         self.size_factor = self.width_and_height / self.resolution
 
         # Set up the size of the canvas.
-        self.geometry(str(self.width_and_height) + "x" + str(self.width_and_height))
+        self.geometry(str(self.width_and_height) + "x" + str(700))
+
+        # create next generation button
+        self.next_generation_button = ttk.Button(self, text="Next Generation", command=self.next_generation)
+        self.next_generation_button.pack()
 
         # Create the canvas widget and add it to the Tkinter application window.
         self.canvas = Canvas(self, width=self.width_and_height, height=self.width_and_height, bg='white')
@@ -41,7 +45,7 @@ class Game(tk.Tk):
 
         self.generate_board()
 
-        self.after(100, self.run)
+        self.generation()
 
     def generate_board(self):
         # Draw a square on the game board for every live cell in the grid.
@@ -61,11 +65,16 @@ class Game(tk.Tk):
                                          fill=self.color_index[max(person.get_suspicion(), person.sum_of_suspicion)],
                                          outline='black')
 
-    def run(self):
+    def generation(self):
         for i in range(100):
             for j in range(100):
                 if self.grid.grid[i, j] == 1:
                     self.grid.people_grid[i, j].spread(self.grid.people_grid, self.grid.n)
+
+    def next_generation(self):
+        self.generation()
+        self.canvas.delete("all")
+        self.generate_board()
 
 
 class Grid:
