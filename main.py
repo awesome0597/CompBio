@@ -233,7 +233,7 @@ def submit(entries):
 # create main function that asks user for input and runs the simulation
 def main():
     root = tk.Tk()
-    root.title("Can you keep a secret?")
+    root.title("I Heard a Rumor?")
     root.geometry("300x200")
     # this will create a label widget
     label_text = ["Enter the size of the grid:", "Enter P (Population Density):", "Enter Percentage of S1:",
