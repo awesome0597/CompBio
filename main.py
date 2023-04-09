@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import random
 import tkinter as tk
@@ -41,11 +43,9 @@ class Game(tk.Tk):
         # create rumor spreaders
         self.grid.create_rumor_spreader()
         # spread rumor
-        self.grid.spread_rumor()
-
+        # self.grid.spread_rumor()
+        # first generation
         self.generate_board()
-
-        self.generation()
 
     def generate_board(self):
         # Draw a square on the game board for every live cell in the grid.
@@ -58,7 +58,7 @@ class Game(tk.Tk):
 
     def draw_square(self, y, x, size, person):
         # Draw a square on the canvas.
-        if person.rumor_spread:
+        if person.rumor_spread or person.sum_of_suspicion == 1:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
         else:
             self.canvas.create_rectangle(x, y, x + size, y + size,
@@ -66,13 +66,21 @@ class Game(tk.Tk):
                                          outline='black')
 
     def generation(self):
+        copy_people_grid = copy.deepcopy(self.grid.people_grid)
         for i in range(100):
             for j in range(100):
                 if self.grid.grid[i, j] == 1:
-                    self.grid.people_grid[i, j].spread(self.grid.people_grid, self.grid.n)
+                    self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
+        return copy_people_grid
+
+        # for i in range(100):
+        #     for j in range(100):
+        #         if self.grid.grid[i, j] == 1:
+        #             self.grid.people_grid[i, j].spread(self.grid.people_grid, self.grid.n)
 
     def next_generation(self):
-        self.generation()
+        self.grid.people_grid = self.generation()
+        # self.generation()
         self.canvas.delete("all")
         self.generate_board()
 
@@ -269,7 +277,7 @@ class Person:
                             if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
                                     grid[location[0] + i, location[1] + j] is not None:
                                 grid[location[0] + i, location[1] + j].receive_rumor()
-                self.rumor_spread = True
+                    self.rumor_spread = True
                 # self.generation = L
                 self.rumor_received = False
             # else:
