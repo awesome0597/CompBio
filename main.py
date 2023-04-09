@@ -300,7 +300,7 @@ def start_menu():
         # grid method to arrange labels in respective
         labels[i].grid(row=i, column=0, sticky=tk.W, pady=2)
 
-    default_entries = ["100", "0.7", "0.5", "0.2", "0.2", "0"]
+    default_entries = ["100", "0.7", "0.2", "0.3", "0.3", "0"]
     entries = []
     for i in range(0, 6):
         entries.append(tk.Entry(root))
