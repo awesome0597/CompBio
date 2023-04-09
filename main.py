@@ -5,9 +5,61 @@ from tkinter import ttk as ttk
 from tkinter import Canvas
 
 
-class Game:
-    def __init__(self, grid):
-        self.grid = grid
+class Game(tk.Tk):
+    def __init__(self, params, width_and_height=600, resolution=100):
+        super().__init__()
+
+        self.title("I Heard a Rumor")
+
+        # Prevent the application window from being resized.
+        self.resizable(False, False)
+
+        # Set the height and width of the applciation.
+        self.width_and_height = width_and_height
+        self.resolution = resolution
+        self.size_factor = self.width_and_height / self.resolution
+
+        # Set up the size of the canvas.
+        self.geometry(str(self.width_and_height) + "x" + str(self.width_and_height))
+
+        # Create the canvas widget and add it to the Tkinter application window.
+        self.canvas = Canvas(self, width=self.width_and_height, height=self.width_and_height, bg='white')
+        self.canvas.pack()
+
+        # create color index
+        self.color_index = {1: 'red', 2 / 3: 'blue', 1 / 3: 'green', 0: 'purple'}
+
+        # create grid
+        self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
+        self.grid.create_grid()
+        # create suspicion grid
+        self.grid.create_suspicion_grid()
+        # create rumor spreaders
+        self.grid.create_rumor_spreader()
+        # spread rumor
+        self.grid.spread_rumor()
+
+        self.generate_board()
+
+        self.after(100, self.run)
+
+    def generate_board(self):
+        # Draw a square on the game board for every live cell in the grid.
+        for x in range(0, self.resolution):
+            for y in range(0, self.resolution):
+                realx = x * self.size_factor
+                realy = y * self.size_factor
+                if self.grid.grid[x, y] == 1:
+                    self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
+
+    def draw_square(self, y, x, size, person):
+        # Draw a square on the canvas.
+        if person.rumor_spread:
+            self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
+        else:
+            self.canvas.create_rectangle(x, y, x + size, y + size,
+                                         fill=self.color_index[max(person.get_suspicion(), person.sum_of_suspicion)],
+                                         outline='black')
 
     def run(self):
         for i in range(100):
@@ -212,26 +264,17 @@ class Person:
             #     self.generation -= 1  # decrement generation
 
 
-def submit(entries):
+def submit(entries, root):
     # don't forget to add L
-    grid = Grid(int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
-                float(entries[4].get()))
-    # create grid
-    grid.create_grid()
-    # create suspicion grid
-    grid.create_suspicion_grid()
-    # create rumor spreaders
-    grid.create_rumor_spreader()
-    # spread rumor
-    grid.spread_rumor()
-    # create game
-    game = Game(grid)
-    # start running
-    game.run()
+    params = [int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
+              float(entries[4].get())]
+    root.destroy()
+    board = Game(params)
+    board.mainloop()
 
 
 # create main function that asks user for input and runs the simulation
-def main():
+def start_menu():
     root = tk.Tk()
     root.title("I Heard a Rumor?")
     root.geometry("300x200")
@@ -255,10 +298,10 @@ def main():
         entries[i].grid(row=i, column=1, pady=2)
 
     ttk.Button(root, text='Quit', command=root.destroy).grid(row=6, column=1, sticky=tk.W, pady=2)
-    ttk.Button(root, text='Submit', command=lambda: [submit(entries), root.destroy()]).grid(row=6, column=0,
+    ttk.Button(root, text='Submit', command=lambda: submit(entries,root)).grid(row=6, column=0,
                                                                                             sticky=tk.E, pady=2)
     root.mainloop()
 
 
 if __name__ == "__main__":
-    main()
+    start_menu()
