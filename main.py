@@ -1,18 +1,8 @@
 import numpy as np
 import random
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
-import matplotlib as mpl
-import matplotlib.patheffects as path_effects
-import matplotlib.gridspec as gridspec
-import matplotlib.ticker as ticker
-import matplotlib.patches as patches
-import matplotlib.image as mpimg
-import matplotlib.font_manager as font_manager
+import tkinter as tk
+from tkinter import ttk as ttk
+from tkinter import Canvas
 
 
 class Game:
@@ -222,20 +212,10 @@ class Person:
             #     self.generation -= 1  # decrement generation
 
 
-# create main function that asks user for input and runs the simulation
-def main():
-    # # get user input
-    # n = int(input("Enter the size of the grid: "))
-    # p = float(input("Enter the p(population density): "))
-    # s1 = float(input("Enter the percentage of S1: "))
-    # s2 = float(input("Enter the percentage of S2: "))
-    # s3 = float(input("Enter the percentage of S3: "))
-    # # L = int(input("Enter the number of generations of silence: "))
-    #
-    # # create grid object
-    # grid = Grid(n, p, s1, s2, s3)
-
-    grid = Grid(100, 0.7, 0.5, 0.2, 0.2)
+def submit(entries):
+    # don't forget to add L
+    grid = Grid(int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
+                float(entries[4].get()))
     # create grid
     grid.create_grid()
     # create suspicion grid
@@ -248,6 +228,35 @@ def main():
     game = Game(grid)
     # start running
     game.run()
+
+
+# create main function that asks user for input and runs the simulation
+def main():
+    root = tk.Tk()
+    root.title("Can you keep a secret?")
+    root.geometry("300x200")
+    # this will create a label widget
+    label_text = ["Enter the size of the grid:", "Enter P (Population Density):", "Enter Percentage of S1:",
+                  "Enter Percentage of S2:", "Enter Percentage of S3:", "Enter L:"]
+    labels = []
+    for i in range(0, 6):
+        labels.append(tk.Label(root, text=label_text[i]))
+        # rows and columns as specified
+        # grid method to arrange labels in respective
+        labels[i].grid(row=i, column=0, sticky=tk.W, pady=2)
+
+    default_entries = ["100", "0.7", "0.5", "0.2", "0.2", "0"]
+    entries = []
+    for i in range(0, 6):
+        entries.append(tk.Entry(root))
+        # default text inside entry box
+        entries[i].insert(0, default_entries[i])
+        # this will arrange entry widgets
+        entries[i].grid(row=i, column=1, pady=2)
+
+    ttk.Button(root, text='Submit', command=lambda: [submit(entries), root.destroy()]).grid(row=6, column=1,
+                                                                                            sticky=tk.W, pady=2)
+    root.mainloop()
 
 
 if __name__ == "__main__":
