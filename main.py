@@ -216,6 +216,7 @@ class Person:
         """
         self.sum_of_suspicion = 1
         self.rumor_spreader = True
+        self.rumor_received = True
 
     def set_suspicion(self, suspicion_level):
         """
@@ -253,10 +254,12 @@ class Person:
             # if self.generation == 0:
             if not self.rumor_spread:
                 if random.random() < self.sum_of_suspicion:
+                    location = self.get_location()
                     for i in range(-1, 2):
                         for j in range(-1, 2):
-                            if 0 <= self.i + i < n and 0 <= self.j + j < n and not (i == 0 and j == 0):
-                                grid[self.i + i, self.j + j].receive_rumor()
+                            if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
+                                    grid[location[0] + i, location[1] + j] is not None:
+                                grid[location[0] + i, location[1] + j].receive_rumor()
                 self.rumor_spread = True
                 # self.generation = L
                 self.rumor_received = False
@@ -298,8 +301,8 @@ def start_menu():
         entries[i].grid(row=i, column=1, pady=2)
 
     ttk.Button(root, text='Quit', command=root.destroy).grid(row=6, column=1, sticky=tk.W, pady=2)
-    ttk.Button(root, text='Submit', command=lambda: submit(entries,root)).grid(row=6, column=0,
-                                                                                            sticky=tk.E, pady=2)
+    ttk.Button(root, text='Submit', command=lambda: submit(entries, root)).grid(row=6, column=0,
+                                                                                sticky=tk.E, pady=2)
     root.mainloop()
 
 
