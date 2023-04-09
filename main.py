@@ -254,8 +254,9 @@ def main():
         # this will arrange entry widgets
         entries[i].grid(row=i, column=1, pady=2)
 
-    ttk.Button(root, text='Submit', command=lambda: [submit(entries), root.destroy()]).grid(row=6, column=1,
-                                                                                            sticky=tk.W, pady=2)
+    ttk.Button(root, text='Quit', command=root.destroy).grid(row=6, column=1, sticky=tk.W, pady=2)
+    ttk.Button(root, text='Submit', command=lambda: [submit(entries), root.destroy()]).grid(row=6, column=0,
+                                                                                            sticky=tk.E, pady=2)
     root.mainloop()
 
 
