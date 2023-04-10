@@ -1,5 +1,4 @@
 import copy
-
 import numpy as np
 import random
 import tkinter as tk
@@ -8,7 +7,7 @@ from tkinter import Canvas
 
 
 class Game(tk.Tk):
-    def __init__(self, params, width_and_height=600, resolution=100):
+    def __init__(self, params, width_and_height=750, resolution=100):
         super().__init__()
 
         self.title("I Heard a Rumor")
@@ -22,7 +21,7 @@ class Game(tk.Tk):
         self.size_factor = self.width_and_height / self.resolution
 
         # Set up the size of the canvas.
-        self.geometry(str(self.width_and_height) + "x" + str(700))
+        self.geometry(str(self.width_and_height) + "x" + str(800))
 
         # create next generation button
         self.next_generation_button = ttk.Button(self, text="Next Generation", command=self.next_generation)
@@ -37,13 +36,13 @@ class Game(tk.Tk):
 
         # create grid
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
-        self.grid.create_grid()
+        self.grid.create_grid(params[5])
         # create suspicion grid
         self.grid.create_suspicion_grid()
         # create rumor spreaders
         self.grid.create_rumor_spreader()
         # spread rumor
-        # self.grid.spread_rumor()
+        self.grid.spread_rumor()
         # first generation
         self.generate_board()
 
@@ -123,7 +122,7 @@ class Grid:
         # generation counter
         self.generation = 0
 
-    def create_grid(self):
+    def create_grid(self, L):
         """
         create grid of people by iterating over the grid and assigning people to each cell with probability p
         """
@@ -133,7 +132,7 @@ class Grid:
                     # assign person to cell
                     self.grid[i, j] = 1
                     # create person object
-                    self.people_grid[i, j] = Person(i, j)
+                    self.people_grid[i, j] = Person(i, j, L)
 
     def create_suspicion_grid(self):
         """
@@ -205,22 +204,29 @@ class Person:
     class that creates a person object
     """
 
-    def __init__(self, i, j):
+    def __init__(self, i, j, L):
         """
         :param i: x coordinate of person
         :param j: y coordinate of person
         """
         self.__i = i
         self.__j = j
+        self.__L = L
         self.rumor_spreader = False
         self.rumor_received = False
         self.rumor_spread = False
         self.sum_of_suspicion = 0
         self.__suspicion = 0
-        # self.generation = 0
+        self.generation = 0
 
     def get_location(self):
         return self.__i, self.__j
+
+    def get_L(self):
+        return self.__L
+
+    def start_generation(self):
+        self.generation += self.__L
 
     def get_suspicion(self):
         return self.__suspicion
@@ -269,8 +275,8 @@ class Person:
         if self.rumor_received:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
+            location = self.get_location()
             if not self.rumor_spread:
-                location = self.get_location()
                 if random.random() < self.sum_of_suspicion:
                     for i in range(-1, 2):
                         for j in range(-1, 2):
@@ -279,17 +285,22 @@ class Person:
                                 grid[location[0] + i, location[1] + j].receive_rumor()
                     # self.rumor_spread = True
                     grid[location[0], location[1]].rumor_spread = True
+                    grid[location[0], location[1]].start_generation()
                 # self.generation = L
                 # self.rumor_received = False
                 grid[location[0], location[1]].rumor_received = False
-            # else:
-            #     self.generation -= 1  # decrement generation
+            else:
+                grid[location[0], location[1]].generation -= 1  # decrement generation
+                if grid[location[0], location[1]].generation == 0:
+                    grid[location[0], location[1]].rumor_spread = False
+                    grid[location[0], location[1]].rumor_received = False
 
 
 def submit(entries, root):
     # don't forget to add L
     params = [int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
-              float(entries[4].get())]
+              float(entries[4].get()), int(entries[5].get())]
+    # TODO: add error checking
     root.destroy()
     board = Game(params)
     board.mainloop()
