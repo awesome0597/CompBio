@@ -58,7 +58,7 @@ class Game(tk.Tk):
 
     def draw_square(self, y, x, size, person):
         # Draw a square on the canvas.
-        if person.rumor_spread or person.sum_of_suspicion == 1:
+        if person.rumor_spread:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
         else:
             self.canvas.create_rectangle(x, y, x + size, y + size,
@@ -270,16 +270,18 @@ class Person:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
             if not self.rumor_spread:
+                location = self.get_location()
                 if random.random() < self.sum_of_suspicion:
-                    location = self.get_location()
                     for i in range(-1, 2):
                         for j in range(-1, 2):
                             if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
                                     grid[location[0] + i, location[1] + j] is not None:
                                 grid[location[0] + i, location[1] + j].receive_rumor()
-                    self.rumor_spread = True
+                    # self.rumor_spread = True
+                    grid[location[0], location[1]].rumor_spread = True
                 # self.generation = L
-                self.rumor_received = False
+                # self.rumor_received = False
+                grid[location[0], location[1]].rumor_received = False
             # else:
             #     self.generation -= 1  # decrement generation
 
