@@ -72,14 +72,8 @@ class Game(tk.Tk):
                     self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
         return copy_people_grid
 
-        # for i in range(100):
-        #     for j in range(100):
-        #         if self.grid.grid[i, j] == 1:
-        #             self.grid.people_grid[i, j].spread(self.grid.people_grid, self.grid.n)
-
     def next_generation(self):
         self.grid.people_grid = self.generation()
-        # self.generation()
         self.canvas.delete("all")
         self.generate_board()
 
@@ -286,14 +280,14 @@ class Person:
                     # self.rumor_spread = True
                     grid[location[0], location[1]].rumor_spread = True
                     grid[location[0], location[1]].start_generation()
-                # self.generation = L
-                # self.rumor_received = False
+
                 grid[location[0], location[1]].rumor_received = False
+                grid[location[0], location[1]].sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
                 if grid[location[0], location[1]].generation == 0:
                     grid[location[0], location[1]].rumor_spread = False
-                    grid[location[0], location[1]].rumor_received = False
+                    grid[location[0], location[1]].sum_of_suspicion = 0
 
 
 def submit(entries, root):
