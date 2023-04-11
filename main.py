@@ -292,6 +292,8 @@ class Person:
             if self.rumor_spread and self.generation == 0:
                 grid[location[0], location[1]].rumor_spread = False
                 grid[location[0], location[1]].sum_of_suspicion = 0
+            else:
+                grid[location[0], location[1]].generation -= 1  # decrement generation
 
 
 def submit(entries, root):
