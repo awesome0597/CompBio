@@ -266,10 +266,10 @@ class Person:
             self.sum_of_suspicion = 1
 
     def spread(self, grid, n):
+        location = self.get_location()
         if self.rumor_received:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
-            location = self.get_location()
             if not self.rumor_spread:
                 if random.random() < self.sum_of_suspicion:
                     for i in range(-1, 2):
@@ -288,6 +288,10 @@ class Person:
                 if grid[location[0], location[1]].generation == 0:
                     grid[location[0], location[1]].rumor_spread = False
                     grid[location[0], location[1]].sum_of_suspicion = 0
+        else:
+            if self.rumor_spread and self.generation == 0:
+                grid[location[0], location[1]].rumor_spread = False
+                grid[location[0], location[1]].sum_of_suspicion = 0
 
 
 def submit(entries, root):
