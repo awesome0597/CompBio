@@ -46,9 +46,12 @@ class Game(tk.Tk):
         # create next generation button
         self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
         self.next_generation_button.grid(row=0, column=0)
-
-        self.next_generation_button = ttk.Button(self.left_frame, text="skip to end")
-        self.next_generation_button.grid(row=1, column=0)
+        # create skip to end button
+        self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End")
+        self.next_skip_end.grid(row=1, column=0)
+        #create quit button
+        self.quit_button = ttk.Button(self.left_frame, text="Quit", command=self.destroy)
+        self.quit_button.grid(row=2, column=0)
 
         # create stat box
         self.stat_box = tk.Text(self.right_frame, height=10, width=30)
