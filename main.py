@@ -49,7 +49,7 @@ class Game(tk.Tk):
         # create skip to end button
         self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End")
         self.next_skip_end.grid(row=1, column=0)
-        #create quit button
+        # create quit button
         self.quit_button = ttk.Button(self.left_frame, text="Quit", command=self.destroy)
         self.quit_button.grid(row=2, column=0)
 
@@ -76,6 +76,8 @@ class Game(tk.Tk):
         # first generation
         self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
+        # for i in range(20):
+        #     self.after(1000, self.next_generation)
 
     def generate_board(self):
         """
@@ -110,8 +112,8 @@ class Game(tk.Tk):
         copy the people grid and iterate over the copy to create the next generation
         """
         copy_people_grid = copy.deepcopy(self.grid.people_grid)
-        for i in range(100):
-            for j in range(100):
+        for i in range(self.resolution):
+            for j in range(self.resolution):
                 if self.grid.grid[i, j] == 1:
                     self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
         return copy_people_grid
