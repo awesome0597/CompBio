@@ -6,6 +6,7 @@ from tkinter import ttk as ttk
 from tkinter import Canvas
 
 
+
 class Game(tk.Tk):
     """
     The main application window.
@@ -37,16 +38,16 @@ class Game(tk.Tk):
         self.next_generation_button = ttk.Button(self, text="Next Generation", command=self.next_generation)
         self.next_generation_button.pack()
 
+        # create stat box
+        self.stat_box = tk.Text(self, height=10, width=30)
+        self.stat_box.pack()
+
         # Create the canvas widget and add it to the Tkinter application window.
         self.canvas = Canvas(self, width=self.width_and_height, height=self.width_and_height, bg='white')
         self.canvas.pack()
 
         # create color index
         self.color_index = {1: 'red', 2 / 3: 'blue', 1 / 3: 'green', 0: 'purple'}
-
-        # create stat box
-        self.stat_box = tk.Text(self, height=10, width=30)
-        self.stat_box.pack()
 
         # create grid
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
@@ -117,15 +118,16 @@ class Game(tk.Tk):
         self.stat_box.delete('1.0', tk.END)
 
         # Compute the size and percentage of each group in the grid.
-        self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation))
+        self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
 
-        suspicion_counts = {1: 0, 2: 0, 3: 0, 4: 0}
+        suspicion_counts = {1: 0, 2/3: 0, 1/3: 0, 0: 0}
 
         for x in range(self.resolution):
             for y in range(self.resolution):
-                person = self.grid.people_grid[x, y]
-                suspicion_level = person.suspicion_level
-                suspicion_counts[suspicion_level] += 1
+                if self.grid.grid[x, y] == 1:
+                    person = self.grid.people_grid[x, y]
+                    suspicion_level = person.get_suspicion()
+                    suspicion_counts[suspicion_level] += 1
 
         total_people = self.resolution ** 2
 
@@ -364,7 +366,7 @@ def submit(entries, root):
               float(entries[4].get()), int(entries[5].get())]
     # TODO: add error checking
     root.destroy()
-    board = Game(params)
+    board = Game(params, 600, 10)
     board.mainloop()
 
 
