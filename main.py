@@ -27,7 +27,7 @@ class Game(tk.Tk):
 
         # Set the height and width of the application.
         self.width_and_height = width_and_height
-        self.resolution = resolution
+        self.resolution = params[0]
         self.size_factor = self.width_and_height / self.resolution
 
         # Set up the size of the canvas.
