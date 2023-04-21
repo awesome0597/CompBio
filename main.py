@@ -86,8 +86,6 @@ class Game(tk.Tk):
             self.next_generation()
             self.update()
 
-
-
     def generate_board(self):
         """
         Generate the board.
@@ -108,7 +106,7 @@ class Game(tk.Tk):
         :param size:  size of square
         :param person:  person object
         """
-        # draw a square on the canvas, if the person has received the rumor, make the box striped
+        # draw a square on the canvas, if the person has received the rumor, make the box full
         if person.rumor_spread:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
         else:
@@ -168,7 +166,8 @@ class Game(tk.Tk):
         for suspicion_level, count in suspicion_counts.items():
             # round to 2 decimal places
             percentage = round(count / total_people * 100, 2)
-            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
+            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
+                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
                 count) + " Percentage: " + str(percentage) + "\n")
 
 
@@ -368,8 +367,6 @@ class Person:
         """
         location = self.get_location()
         if self.heard_rumor:
-            # can spread rumor if generation equals 0
-            # if self.generation == 0:
             if not self.rumor_spread:
                 if random.random() < self.__sum_of_suspicion:
                     for i in range(-1, 2):
@@ -377,7 +374,7 @@ class Person:
                             if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
                                     grid[location[0] + i, location[1] + j] is not None:
                                 grid[location[0] + i, location[1] + j].receive_rumor()
-                    # self.rumor_spread = True
+
                     grid[location[0], location[1]].rumor_spread = True
                     grid[location[0], location[1]].start_generation()
 
@@ -385,12 +382,12 @@ class Person:
                 grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
+                grid[location[0], location[1]].rumor_spread = False
                 if grid[location[0], location[1]].generation == 0:
-                    grid[location[0], location[1]].rumor_spread = False
                     grid[location[0], location[1]].__sum_of_suspicion = 0
         else:
+            grid[location[0], location[1]].rumor_spread = False
             if self.rumor_spread and self.generation == 0:
-                grid[location[0], location[1]].rumor_spread = False
                 grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
@@ -418,28 +415,28 @@ def start_menu():
     """
     root = tk.Tk()
     root.title("I Heard a Rumor?")
-    root.geometry("300x200")
+    root.geometry("300x230")
     # this will create a label widget
     label_text = ["Enter the size of the grid:", "Enter P (Population Density):", "Enter Percentage of S1:",
-                  "Enter Percentage of S2:", "Enter Percentage of S3:", "Enter L:"]
+                  "Enter Percentage of S2:", "Enter Percentage of S3:", "Enter L:", "Enter Generation Limit:"]
     labels = []
-    for i in range(0, 6):
+    for i in range(0, len(label_text)):
         labels.append(tk.Label(root, text=label_text[i]))
         # rows and columns as specified
         # grid method to arrange labels in respective
         labels[i].grid(row=i, column=0, sticky=tk.W, pady=2)
 
-    default_entries = ["100", "0.7", "0.2", "0.3", "0.3", "0"]
+    default_entries = ["100", "0.7", "0.2", "0.3", "0.3", "0", "100"]
     entries = []
-    for i in range(0, 6):
+    for i in range(0, len(label_text)):
         entries.append(tk.Entry(root))
         # default text inside entry box
         entries[i].insert(0, default_entries[i])
         # this will arrange entry widgets
         entries[i].grid(row=i, column=1, pady=2)
 
-    ttk.Button(root, text='Quit', command=root.destroy).grid(row=6, column=1, sticky=tk.W, pady=2)
-    ttk.Button(root, text='Submit', command=lambda: submit(entries, root)).grid(row=6, column=0,
+    ttk.Button(root, text='Quit', command=root.destroy).grid(row=7, column=1, sticky=tk.W, pady=2)
+    ttk.Button(root, text='Submit', command=lambda: submit(entries, root)).grid(row=7, column=0,
                                                                                 sticky=tk.E, pady=2)
     root.mainloop()
 
