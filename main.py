@@ -84,6 +84,7 @@ class Game(tk.Tk):
                 realy = y * self.size_factor
                 if self.grid.grid[x, y] == 1:
                     self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
+        self.update_stat_box()
 
     def draw_square(self, y, x, size, person):
         """
@@ -119,9 +120,8 @@ class Game(tk.Tk):
         """
         self.grid.people_grid = self.generation()
         self.canvas.delete("all")
-        self.generate_board()
         self.grid.generation += 1
-        self.update_stat_box()
+        self.generate_board()
 
     def update_stat_box(self):
         """
