@@ -15,7 +15,6 @@ class Game(tk.Tk):
         """
         :param params:  list of parameters
         :param width_and_height:  width and height of the application window
-        :param resolution:  resolution of the grid
         """
 
         super().__init__()
@@ -139,7 +138,7 @@ class Game(tk.Tk):
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
 
         suspicion_counts = {1: 0, 2 / 3: 0, 1 / 3: 0, 0: 0}
-        suspicion_groups = {1: 1, 2 / 3: 2, 1 / 3: 3, 0: 4}
+        suspicion_groups = {1: (1, "red"), 2 / 3: (2, "blue"), 1 / 3: (3, "green"), 0: (4, "purple")}
 
         for x in range(self.resolution):
             for y in range(self.resolution):
@@ -151,9 +150,10 @@ class Game(tk.Tk):
         total_people = self.resolution ** 2
 
         for suspicion_level, count in suspicion_counts.items():
-            percentage = (count / total_people) * 100
-            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level]) + " (amount of people): " + str(
-                count) + " percentage: " + str(percentage) + "\n")
+            # round to 2 decimal places
+            percentage = round(count / total_people * 100, 2)
+            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
+                count) + " Percentage: " + str(percentage) + "\n")
 
 
 class Grid:
@@ -282,6 +282,7 @@ class Person:
         self.__L = L
         self.rumor_spreader = False
         self.rumor_received = False
+        self.heard_rumor = False
         self.rumor_spread = False
         self.__sum_of_suspicion = 0
         self.__suspicion = 0
@@ -310,6 +311,7 @@ class Person:
         self.__sum_of_suspicion = 1
         self.rumor_spreader = True
         self.rumor_received = True
+        self.heard_rumor = True
 
     def set_suspicion(self, suspicion_level):
         """
@@ -329,6 +331,7 @@ class Person:
         function for when a person receives a rumor
         """
         self.rumor_received = True
+        self.heard_rumor = True
         self.belief_increase()
 
     def belief_increase(self):
@@ -348,7 +351,7 @@ class Person:
         :param n:  the size of the grid
         """
         location = self.get_location()
-        if self.rumor_received:
+        if self.heard_rumor:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
             if not self.rumor_spread:
@@ -362,7 +365,7 @@ class Person:
                     grid[location[0], location[1]].rumor_spread = True
                     grid[location[0], location[1]].start_generation()
 
-                grid[location[0], location[1]].rumor_received = False
+                grid[location[0], location[1]].heard_rumor = False
                 grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
