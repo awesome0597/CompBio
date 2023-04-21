@@ -137,11 +137,13 @@ class Game(tk.Tk):
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
 
         suspicion_counts = {1: 0, 2 / 3: 0, 1 / 3: 0, 0: 0}
+        suspicion_groups = {1: 1, 2 / 3: 2, 1 / 3: 3, 0: 4}
 
         for x in range(self.resolution):
             for y in range(self.resolution):
                 if self.grid.people_grid[x, y]:
                     person = self.grid.people_grid[x, y]
+                    group = suspicion_groups[person.get_sum_of_suspicion()]
                     suspicion_level = person.get_sum_of_suspicion()
                     suspicion_counts[suspicion_level] += 1
 
