@@ -143,7 +143,6 @@ class Game(tk.Tk):
             for y in range(self.resolution):
                 if self.grid.people_grid[x, y]:
                     person = self.grid.people_grid[x, y]
-                    group = suspicion_groups[person.get_sum_of_suspicion()]
                     suspicion_level = person.get_sum_of_suspicion()
                     suspicion_counts[suspicion_level] += 1
 
@@ -151,7 +150,7 @@ class Game(tk.Tk):
 
         for suspicion_level, count in suspicion_counts.items():
             percentage = (count / total_people) * 100
-            self.stat_box.insert(tk.END, "S" + str(suspicion_level) + " (amount of people): " + str(
+            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level]) + " (amount of people): " + str(
                 count) + " percentage: " + str(percentage) + "\n")
 
 
