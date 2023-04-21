@@ -118,10 +118,21 @@ class Game(tk.Tk):
 
         # Compute the size and percentage of each group in the grid.
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation))
-        self.stat_box.insert(tk.END, "S1 (amount of people): " + str(len(self.grid.group_1)) + "percentage: " + str(
-            len(self.grid.group_1) / self.resolution ** 2))
-        self.stat_box.insert(tk.END, "S2 (amount of people): " + str(len(self.grid.group_2)) + "percentage: " + str(
-            len(self.grid.group_2) / 100))
+
+        suspicion_counts = {1: 0, 2: 0, 3: 0, 4: 0}
+
+        for x in range(self.resolution):
+            for y in range(self.resolution):
+                person = self.grid.people_grid[x, y]
+                suspicion_level = person.suspicion_level
+                suspicion_counts[suspicion_level] += 1
+
+        total_people = self.resolution ** 2
+
+        for suspicion_level, count in suspicion_counts.items():
+            percentage = (count / total_people) * 100
+            self.stat_box.insert(tk.END, "S" + str(suspicion_level) + " (amount of people): " + str(
+                count) + " percentage: " + str(percentage) + "\n")
 
 
 class Grid:
