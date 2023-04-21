@@ -81,7 +81,7 @@ class Game(tk.Tk):
         self.generate_board()
         self.update()
 
-        for i in range(20):
+        for i in range(params[6]):
             time.sleep(2)
             self.next_generation()
             self.update()
@@ -401,7 +401,7 @@ def submit(entries, root):
     """
     # don't forget to add L
     params = [int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
-              float(entries[4].get()), int(entries[5].get())]
+              float(entries[4].get()), int(entries[5].get()), int(entries[6].get())]
     # TODO: add error checking
     root.destroy()
     board = Game(params, 600)
