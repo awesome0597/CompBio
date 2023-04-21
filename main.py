@@ -71,15 +71,21 @@ class Game(tk.Tk):
         self.grid.create_suspicion_grid()
         # create rumor spreaders
         self.grid.create_rumor_spreader()
-        # spread rumor
-        self.grid.spread_rumor()
         # first generation
         self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
+        self.update()
+        time.sleep(2)
+        # spread rumor
+        self.grid.spread_rumor()
+        self.generate_board()
+        self.update()
+
         for i in range(20):
+            time.sleep(2)
             self.next_generation()
             self.update()
-            time.sleep(2)
+
 
 
     def generate_board(self):
