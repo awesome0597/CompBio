@@ -33,16 +33,29 @@ class Game(tk.Tk):
         # Set up the size of the canvas.
         self.geometry(str(self.width_and_height) + "x" + str(800))
 
+        # create frame
+        self.info_frame = tk.Frame(self)
+        self.info_frame.pack()
+        self.right_frame = tk.Frame(self.info_frame)
+        self.left_frame = tk.Frame(self.info_frame)
+        self.right_frame.grid(row=0, column=1)
+        self.left_frame.grid(row=0, column=0)
+        self.canvas_frame = tk.Frame(self)
+        self.canvas_frame.pack()
+
         # create next generation button
-        self.next_generation_button = ttk.Button(self, text="Next Generation", command=self.next_generation)
-        self.next_generation_button.pack()
+        self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
+        self.next_generation_button.grid(row=0, column=0)
+
+        self.next_generation_button = ttk.Button(self.left_frame, text="skip to end")
+        self.next_generation_button.grid(row=1, column=0)
 
         # create stat box
-        self.stat_box = tk.Text(self, height=10, width=30)
+        self.stat_box = tk.Text(self.right_frame, height=10, width=30)
         self.stat_box.pack()
 
         # Create the canvas widget and add it to the Tkinter application window.
-        self.canvas = Canvas(self, width=self.width_and_height, height=self.width_and_height, bg='white')
+        self.canvas = Canvas(self.canvas_frame, width=self.width_and_height, height=self.width_and_height, bg='white')
         self.canvas.pack()
 
         # create color index
