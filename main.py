@@ -2,6 +2,7 @@ import copy
 import numpy as np
 import random
 import tkinter as tk
+import time
 from tkinter import ttk as ttk
 from tkinter import Canvas
 
@@ -75,8 +76,11 @@ class Game(tk.Tk):
         # first generation
         self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
-        # for i in range(20):
-        #     self.after(1000, self.next_generation)
+        for i in range(20):
+            self.next_generation()
+            self.update()
+            time.sleep(2)
+
 
     def generate_board(self):
         """
@@ -127,6 +131,7 @@ class Game(tk.Tk):
         self.grid.generation += 1
         self.generate_board()
 
+
     def update_stat_box(self):
         """
         update the stat box
@@ -152,7 +157,8 @@ class Game(tk.Tk):
         for suspicion_level, count in suspicion_counts.items():
             # round to 2 decimal places
             percentage = round(count / total_people * 100, 2)
-            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
+            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
+                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
                 count) + " Percentage: " + str(percentage) + "\n")
 
 
