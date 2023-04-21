@@ -108,13 +108,19 @@ class Game(tk.Tk):
         :param size:  size of square
         :param person:  person object
         """
-        # Draw a square on the canvas.
+        # draw a square on the canvas, if the person has received the rumor, make the box striped
         if person.rumor_spread:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
         else:
-            self.canvas.create_rectangle(x, y, x + size, y + size, fill=self.color_index[max(person.get_suspicion(),
-                                                                                             person.get_sum_of_suspicion())],
-                                         outline='black')
+            if person.rumor_received:
+                self.canvas.create_rectangle(x, y, x + size, y + size,
+                                             fill=self.color_index[max(person.get_suspicion(),
+                                                                       person.get_sum_of_suspicion())], outline='black')
+            else:
+                self.canvas.create_rectangle(x, y, x + size, y + size,
+                                             fill=self.color_index[max(person.get_suspicion(),
+                                                                       person.get_sum_of_suspicion())], outline='black',
+                                             stipple='questhead')
 
     def generation(self):
         """
@@ -136,7 +142,6 @@ class Game(tk.Tk):
         self.canvas.delete("all")
         self.grid.generation += 1
         self.generate_board()
-
 
     def update_stat_box(self):
         """
@@ -163,8 +168,7 @@ class Game(tk.Tk):
         for suspicion_level, count in suspicion_counts.items():
             # round to 2 decimal places
             percentage = round(count / total_people * 100, 2)
-            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
-                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
+            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
                 count) + " Percentage: " + str(percentage) + "\n")
 
 
