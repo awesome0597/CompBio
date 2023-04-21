@@ -11,7 +11,7 @@ class Game(tk.Tk):
     The main application window.
     """
 
-    def __init__(self, params, width_and_height=750, resolution=100):
+    def __init__(self, params, width_and_height=750):
         """
         :param params:  list of parameters
         :param width_and_height:  width and height of the application window
@@ -387,7 +387,7 @@ def submit(entries, root):
               float(entries[4].get()), int(entries[5].get())]
     # TODO: add error checking
     root.destroy()
-    board = Game(params, 600, 100)
+    board = Game(params, 600)
     board.mainloop()
 
 
