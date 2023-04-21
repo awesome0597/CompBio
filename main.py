@@ -6,7 +6,6 @@ from tkinter import ttk as ttk
 from tkinter import Canvas
 
 
-
 class Game(tk.Tk):
     """
     The main application window.
@@ -85,8 +84,8 @@ class Game(tk.Tk):
         if person.rumor_spread:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
         else:
-            self.canvas.create_rectangle(x, y, x + size, y + size,
-                                         fill=self.color_index[max(person.get_suspicion(), person.sum_of_suspicion)],
+            self.canvas.create_rectangle(x, y, x + size, y + size, fill=self.color_index[max(person.get_suspicion(),
+                                                                                             person.get_sum_of_suspicion())],
                                          outline='black')
 
     def generation(self):
@@ -108,6 +107,7 @@ class Game(tk.Tk):
         self.grid.people_grid = self.generation()
         self.canvas.delete("all")
         self.generate_board()
+        self.grid.generation += 1
         self.update_stat_box()
 
     def update_stat_box(self):
@@ -120,13 +120,13 @@ class Game(tk.Tk):
         # Compute the size and percentage of each group in the grid.
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
 
-        suspicion_counts = {1: 0, 2/3: 0, 1/3: 0, 0: 0}
+        suspicion_counts = {1: 0, 2 / 3: 0, 1 / 3: 0, 0: 0}
 
         for x in range(self.resolution):
             for y in range(self.resolution):
-                if self.grid.grid[x, y] == 1:
+                if self.grid.people_grid[x, y]:
                     person = self.grid.people_grid[x, y]
-                    suspicion_level = person.get_suspicion()
+                    suspicion_level = person.get_sum_of_suspicion()
                     suspicion_counts[suspicion_level] += 1
 
         total_people = self.resolution ** 2
@@ -264,9 +264,12 @@ class Person:
         self.rumor_spreader = False
         self.rumor_received = False
         self.rumor_spread = False
-        self.sum_of_suspicion = 0
+        self.__sum_of_suspicion = 0
         self.__suspicion = 0
         self.generation = 0
+
+    def get_sum_of_suspicion(self):
+        return self.__sum_of_suspicion
 
     def get_location(self):
         return self.__i, self.__j
@@ -285,7 +288,7 @@ class Person:
         function for when a person is chosen to start a rumor.
         set suspicion level to 1 and set rumor_spreader to True
         """
-        self.sum_of_suspicion = 1
+        self.__sum_of_suspicion = 1
         self.rumor_spreader = True
         self.rumor_received = True
 
@@ -315,9 +318,9 @@ class Person:
         """
         # raise the sum of suspicion by the suspicion level of the person who spread the rumor, if sum of suspicion
         # is more than 1, set it to 1
-        self.sum_of_suspicion += self.__suspicion
-        if self.sum_of_suspicion > 1:
-            self.sum_of_suspicion = 1
+        self.__sum_of_suspicion += self.__suspicion
+        if self.__sum_of_suspicion > 1:
+            self.__sum_of_suspicion = 1
 
     def spread(self, grid, n):
         """
@@ -330,7 +333,7 @@ class Person:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
             if not self.rumor_spread:
-                if random.random() < self.sum_of_suspicion:
+                if random.random() < self.__sum_of_suspicion:
                     for i in range(-1, 2):
                         for j in range(-1, 2):
                             if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
@@ -341,16 +344,16 @@ class Person:
                     grid[location[0], location[1]].start_generation()
 
                 grid[location[0], location[1]].rumor_received = False
-                grid[location[0], location[1]].sum_of_suspicion = 0
+                grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
                 if grid[location[0], location[1]].generation == 0:
                     grid[location[0], location[1]].rumor_spread = False
-                    grid[location[0], location[1]].sum_of_suspicion = 0
+                    grid[location[0], location[1]].__sum_of_suspicion = 0
         else:
             if self.rumor_spread and self.generation == 0:
                 grid[location[0], location[1]].rumor_spread = False
-                grid[location[0], location[1]].sum_of_suspicion = 0
+                grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
                 grid[location[0], location[1]].generation -= 1  # decrement generation
 
@@ -366,7 +369,7 @@ def submit(entries, root):
               float(entries[4].get()), int(entries[5].get())]
     # TODO: add error checking
     root.destroy()
-    board = Game(params, 600, 10)
+    board = Game(params, 600, 100)
     board.mainloop()
 
 
