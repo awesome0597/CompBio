@@ -54,7 +54,7 @@ class Game(tk.Tk):
         self.quit_button.grid(row=2, column=0)
 
         # create stat box
-        self.stat_box = tk.Text(self.right_frame, height=10, width=30)
+        self.stat_box = tk.Text(self.right_frame, height=8, width=60)
         self.stat_box.pack()
 
         # Create the canvas widget and add it to the Tkinter application window.
