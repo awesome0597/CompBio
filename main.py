@@ -7,7 +7,17 @@ from tkinter import Canvas
 
 
 class Game(tk.Tk):
+    """
+    The main application window.
+    """
+
     def __init__(self, params, width_and_height=750, resolution=100):
+        """
+        :param params:  list of parameters
+        :param width_and_height:  width and height of the application window
+        :param resolution:  resolution of the grid
+        """
+
         super().__init__()
 
         self.title("I Heard a Rumor")
@@ -15,7 +25,7 @@ class Game(tk.Tk):
         # Prevent the application window from being resized.
         self.resizable(False, False)
 
-        # Set the height and width of the applciation.
+        # Set the height and width of the application.
         self.width_and_height = width_and_height
         self.resolution = resolution
         self.size_factor = self.width_and_height / self.resolution
@@ -34,6 +44,10 @@ class Game(tk.Tk):
         # create color index
         self.color_index = {1: 'red', 2 / 3: 'blue', 1 / 3: 'green', 0: 'purple'}
 
+        # create stat box
+        self.stat_box = tk.Text(self, height=10, width=30)
+        self.stat_box.pack()
+
         # create grid
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
         self.grid.create_grid(params[5])
@@ -44,10 +58,13 @@ class Game(tk.Tk):
         # spread rumor
         self.grid.spread_rumor()
         # first generation
+        self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
 
     def generate_board(self):
-        # Draw a square on the game board for every live cell in the grid.
+        """
+        Generate the board.
+        """
         for x in range(0, self.resolution):
             for y in range(0, self.resolution):
                 realx = x * self.size_factor
@@ -56,6 +73,13 @@ class Game(tk.Tk):
                     self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
 
     def draw_square(self, y, x, size, person):
+        """
+        Draw a square on the canvas.
+        :param y:  y coordinate
+        :param x:   x coordinate
+        :param size:  size of square
+        :param person:  person object
+        """
         # Draw a square on the canvas.
         if person.rumor_spread:
             self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
@@ -65,6 +89,9 @@ class Game(tk.Tk):
                                          outline='black')
 
     def generation(self):
+        """
+        copy the people grid and iterate over the copy to create the next generation
+        """
         copy_people_grid = copy.deepcopy(self.grid.people_grid)
         for i in range(100):
             for j in range(100):
@@ -73,9 +100,28 @@ class Game(tk.Tk):
         return copy_people_grid
 
     def next_generation(self):
+        """
+        create next generation of people
+        :return:
+        """
         self.grid.people_grid = self.generation()
         self.canvas.delete("all")
         self.generate_board()
+        self.update_stat_box()
+
+    def update_stat_box(self):
+        """
+        update the stat box
+        """
+        # Clear the contents of the stat box.
+        self.stat_box.delete('1.0', tk.END)
+
+        # Compute the size and percentage of each group in the grid.
+        self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation))
+        self.stat_box.insert(tk.END, "S1 (amount of people): " + str(len(self.grid.group_1)) + "percentage: " + str(
+            len(self.grid.group_1) / self.resolution ** 2))
+        self.stat_box.insert(tk.END, "S2 (amount of people): " + str(len(self.grid.group_2)) + "percentage: " + str(
+            len(self.grid.group_2) / 100))
 
 
 class Grid:
@@ -90,16 +136,12 @@ class Grid:
         :param distribution_of_group_1:  distribution of suspicion levels for group 1
         :param distribution_of_group_2: distribution of suspicion levels for group 2
         :param distribution_of_group_3: distribution of suspicion levels for group 3
-        :param L: number of generations a person will not spread a rumor after spreading it
         """
         self.n = n
         self.p = p
         self.s1 = distribution_of_group_1
         self.s2 = distribution_of_group_2
         self.s3 = distribution_of_group_3
-        # self.L = L
-        # create grid, suspicion grid, and people grid. ****** possibly easier to make a 3D tensor where each layer is
-        # a grid
         self.grid = np.zeros((n, n))
         self.suspicion_grid = np.zeros((n, n))
         self.people_grid = np.empty((n, n), dtype=object)
@@ -229,7 +271,6 @@ class Person:
         """
         function for when a person is chosen to start a rumor.
         set suspicion level to 1 and set rumor_spreader to True
-        :return:
         """
         self.sum_of_suspicion = 1
         self.rumor_spreader = True
@@ -266,6 +307,11 @@ class Person:
             self.sum_of_suspicion = 1
 
     def spread(self, grid, n):
+        """
+        spread rumor to neighbor
+        :param grid:  the grid of people
+        :param n:  the size of the grid
+        """
         if self.rumor_received:
             # can spread rumor if generation equals 0
             # if self.generation == 0:
@@ -291,6 +337,11 @@ class Person:
 
 
 def submit(entries, root):
+    """
+    function that gets the user input from the entries
+    :param entries: user input
+    :param root: root window
+    """
     # don't forget to add L
     params = [int(entries[0].get()), float(entries[1].get()), float(entries[2].get()), float(entries[3].get()),
               float(entries[4].get()), int(entries[5].get())]
@@ -302,6 +353,9 @@ def submit(entries, root):
 
 # create main function that asks user for input and runs the simulation
 def start_menu():
+    """
+    function that creates the start menu
+    """
     root = tk.Tk()
     root.title("I Heard a Rumor?")
     root.geometry("300x200")
