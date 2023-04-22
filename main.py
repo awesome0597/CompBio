@@ -47,7 +47,7 @@ class Game(tk.Tk):
         self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
         self.next_generation_button.grid(row=0, column=0)
         # create skip to end button
-        self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End")
+        self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End", command=self.skip_to_end)
         self.next_skip_end.grid(row=1, column=0)
         # create quit button
         self.quit_button = ttk.Button(self.left_frame, text="Quit", command=self.destroy)
@@ -71,6 +71,8 @@ class Game(tk.Tk):
         self.grid.create_suspicion_grid()
         # create rumor spreaders
         self.grid.create_rumor_spreader()
+        # set generation limit
+        self.generation_limit = params[6]
         # first generation
         self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
@@ -81,7 +83,7 @@ class Game(tk.Tk):
         self.generate_board()
         self.update()
 
-        for i in range(params[6]):
+        while self.grid.generation <= self.generation_limit:
             time.sleep(0.5)
             self.next_generation()
             self.update()
@@ -169,6 +171,13 @@ class Game(tk.Tk):
             self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
                                                        0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
                 count) + " Percentage: " + str(percentage) + "\n")
+
+    def skip_to_end(self):
+        """
+        skip to the end of the simulation
+        """
+        while self.grid.get_generation() < self.generation_limit:
+            self.next_generation()
 
 
 class Grid:
@@ -280,6 +289,9 @@ class Grid:
         self.rumor_spreader_2.spread(self.people_grid, self.n)
         self.rumor_spreader_3.spread(self.people_grid, self.n)
         self.rumor_spreader_4.spread(self.people_grid, self.n)
+
+    def get_generation(self):
+        return self.generation
 
 
 class Person:
