@@ -66,7 +66,8 @@ class Game(tk.Tk):
 
         # create grid
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
-        self.grid.create_grid(params[5])
+        self.L_params = params[5]
+        self.grid.create_grid(self.L_params)
         # create suspicion grid
         self.grid.create_suspicion_grid()
         # create rumor spreaders
@@ -108,9 +109,12 @@ class Game(tk.Tk):
         :param size:  size of square
         :param person:  person object
         """
-        # draw a square on the canvas, if the person has received the rumor, make the box full
+        # draw a square on the canvas, if the person has received the rumor, make the box striped
         if person.rumor_spread:
-            self.canvas.create_rectangle(x, y, x + size, y + size, fill='black', outline='black')
+            self.canvas.create_rectangle(x, y, x + size, y + size,
+                                         fill=self.color_index[max(person.get_suspicion(),
+                                                                   person.get_sum_of_suspicion())],
+                                         outline='black', width=3)
         else:
             if person.rumor_received:
                 self.canvas.create_rectangle(x, y, x + size, y + size,
@@ -150,6 +154,13 @@ class Game(tk.Tk):
         # Clear the contents of the stat box.
         self.stat_box.delete('1.0', tk.END)
 
+        # add grid stats to stat box
+        self.stat_box.insert(tk.END, "population density: " + str(self.grid.p) + "\n")
+        self.stat_box.insert(tk.END, "L param " + str(self.L_params) + "\n")
+        # add "game stats" to stat box in bold font underlined
+        self.stat_box.insert(tk.END, "Game stats:\n", 'underline')
+        self.stat_box.tag_configure('underline', underline=True)
+
         # Compute the size and percentage of each group in the grid.
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
 
@@ -169,7 +180,8 @@ class Game(tk.Tk):
             # round to 2 decimal places
             percentage = round(count / total_people * 100, 2)
             self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
-                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of people: " + str(
+                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of "
+                                                             f"people: " + str(
                 count) + " Percentage: " + str(percentage) + "\n")
 
     def skip_to_end(self):
