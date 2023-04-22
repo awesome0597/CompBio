@@ -75,14 +75,14 @@ class Game(tk.Tk):
         self.stats = {}  # create an empty dictionary to store stats
         self.generate_board()
         self.update()
-        time.sleep(2)
+        time.sleep(0.5)
         # spread rumor
         self.grid.spread_rumor()
         self.generate_board()
         self.update()
 
         for i in range(params[6]):
-            time.sleep(2)
+            time.sleep(0.5)
             self.next_generation()
             self.update()
 
@@ -366,7 +366,7 @@ class Person:
         :param n:  the size of the grid
         """
         location = self.get_location()
-        if self.heard_rumor:
+        if self.heard_rumor and self.generation == 0:
             if not self.rumor_spread:
                 if random.random() < self.__sum_of_suspicion:
                     for i in range(-1, 2):
@@ -381,16 +381,30 @@ class Person:
                 grid[location[0], location[1]].heard_rumor = False
                 grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
+                # grid[location[0], location[1]].generation -= 1  # decrement generation
+                grid[location[0], location[1]].rumor_spread = False
+                grid[location[0], location[1]].heard_rumor = False
+                if grid[location[0], location[1]].generation == 0:
+                    grid[location[0], location[1]].__sum_of_suspicion = 0
+                else:
+                    grid[location[0], location[1]].generation -= 1  # decrement generation
+
+        else:
+            # grid[location[0], location[1]].rumor_spread = False
+            # if self.generation == 0:
+            #     grid[location[0], location[1]].__sum_of_suspicion = 0
+            #     grid[location[0], location[1]].heard_rumor = False
+            # else:
+            #     grid[location[0], location[1]].generation -= 1  # decrement generation
+
+            if self.heard_rumor and self.generation != 0:
+                self.heard_rumor = False
                 grid[location[0], location[1]].generation -= 1  # decrement generation
                 grid[location[0], location[1]].rumor_spread = False
                 if grid[location[0], location[1]].generation == 0:
                     grid[location[0], location[1]].__sum_of_suspicion = 0
-        else:
-            grid[location[0], location[1]].rumor_spread = False
-            if self.rumor_spread and self.generation == 0:
-                grid[location[0], location[1]].__sum_of_suspicion = 0
             else:
-                grid[location[0], location[1]].generation -= 1  # decrement generation
+                grid[location[0], location[1]].rumor_spread = False
 
 
 def submit(entries, root):
