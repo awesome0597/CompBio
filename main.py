@@ -19,7 +19,6 @@ class Game(tk.Tk):
         """
 
         super().__init__()
-
         self.title("I Heard a Rumor")
 
         # Prevent the application window from being resized.
@@ -56,6 +55,9 @@ class Game(tk.Tk):
         # create stat box
         self.stat_box = tk.Text(self.right_frame, height=8, width=60)
         self.stat_box.pack()
+        self.generation_50 = None
+        self.generation_25 = None
+        self.generation_75 = None
 
         # Create the canvas widget and add it to the Tkinter application window.
         self.canvas = Canvas(self.canvas_frame, width=self.width_and_height, height=self.width_and_height, bg='white')
@@ -97,7 +99,7 @@ class Game(tk.Tk):
             for y in range(0, self.resolution):
                 realx = x * self.size_factor
                 realy = y * self.size_factor
-                if self.grid.grid[x, y] == 1:
+                if (x, y) in self.grid.people_coords:
                     self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
         self.update_stat_box()
 
@@ -131,10 +133,8 @@ class Game(tk.Tk):
         copy the people grid and iterate over the copy to create the next generation
         """
         copy_people_grid = copy.deepcopy(self.grid.people_grid)
-        for i in range(self.resolution):
-            for j in range(self.resolution):
-                if self.grid.grid[i, j] == 1:
-                    self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
+        for i, j in self.grid.people_coords:
+            self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
         return copy_people_grid
 
     def next_generation(self):
@@ -161,28 +161,33 @@ class Game(tk.Tk):
         self.stat_box.insert(tk.END, "Game stats:\n", 'underline')
         self.stat_box.tag_configure('underline', underline=True)
 
-        # Compute the size and percentage of each group in the grid.
+        # compute each generation, what the percent of people who received the rumor is
         self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
+        rumor_received = 0
+        total_people = len(self.grid.people_coords)
+        for x, y in self.grid.people_coords:
+            if self.grid.people_grid[x, y].rumor_received:
+                rumor_received += 1
+        percent_received = round(rumor_received / total_people * 100, 2)
+        self.stat_box.insert(tk.END, "Percent of people who received the rumor: " + str(percent_received) + "%\n")
 
-        suspicion_counts = {1: 0, 2 / 3: 0, 1 / 3: 0, 0: 0}
-        suspicion_groups = {1: (1, "red"), 2 / 3: (2, "blue"), 1 / 3: (3, "green"), 0: (4, "purple")}
+        # calculate which generation the population reach 25% rumor received
+        if percent_received >= 25:
+            if self.generation_25 is None:
+                self.generation_25 = self.grid.generation
+            self.stat_box.insert(tk.END, "Generation 25% rumor received: " + str(self.generation_25) + "\n")
 
-        for x in range(self.resolution):
-            for y in range(self.resolution):
-                if self.grid.people_grid[x, y]:
-                    person = self.grid.people_grid[x, y]
-                    suspicion_level = person.get_sum_of_suspicion()
-                    suspicion_counts[suspicion_level] += 1
+        # calculate which generation the population reach 50% rumor received
+        if percent_received >= 50:
+            if self.generation_50 is None:
+                self.generation_50 = self.grid.generation
+            self.stat_box.insert(tk.END, "Generation 50% rumor received: " + str(self.generation_50) + "\n")
 
-        total_people = self.resolution ** 2
-
-        for suspicion_level, count in suspicion_counts.items():
-            # round to 2 decimal places
-            percentage = round(count / total_people * 100, 2)
-            self.stat_box.insert(tk.END, "S" + str(suspicion_groups[suspicion_level][
-                                                       0]) + f"({suspicion_groups[suspicion_level][1]}) amount of "
-                                                             f"people: " + str(
-                count) + " Percentage: " + str(percentage) + "\n")
+        # calculate which generation the population reach 75% rumor received
+        if percent_received >= 75:
+            if self.generation_75 is None:
+                self.generation_75 = self.grid.generation
+            self.stat_box.insert(tk.END, "Generation 75% rumor received: " + str(self.generation_75) + "\n")
 
     def skip_to_end(self):
         """
@@ -213,6 +218,7 @@ class Grid:
         self.grid = np.zeros((n, n))
         self.suspicion_grid = np.zeros((n, n))
         self.people_grid = np.empty((n, n), dtype=object)
+        self.people_coords = []
         # create lists for each group
         self.group_1 = []
         self.group_2 = []
@@ -233,30 +239,27 @@ class Grid:
         for i in range(self.n):
             for j in range(self.n):
                 if random.random() < self.p:
-                    # assign person to cell
-                    self.grid[i, j] = 1
                     # create person object
                     self.people_grid[i, j] = Person(i, j, L)
+                    self.people_coords.append((i, j))
 
     def create_suspicion_grid(self):
         """
         create suspicion grid by iterating over the grid and assigning suspicion levels to each person
         """
-        for i in range(self.n):
-            for j in range(self.n):
-                if self.grid[i, j]:
-                    # assign suspicion level to person
-                    # this sets the suspicion level of the person object and returns the suspicion level of the person
-                    # to assign to the suspicion grid
-                    self.suspicion_grid[i, j] = self.give_suspicion_type(self.people_grid[i, j])
-                    if self.suspicion_grid[i, j] == 1:
-                        self.group_1.append(self.people_grid[i, j])
-                    elif self.suspicion_grid[i, j] == 2:
-                        self.group_2.append(self.people_grid[i, j])
-                    elif self.suspicion_grid[i, j] == 3:
-                        self.group_3.append(self.people_grid[i, j])
-                    elif self.suspicion_grid[i, j] == 4:
-                        self.group_4.append(self.people_grid[i, j])
+        for i, j in self.people_coords:
+            # assign suspicion level to person
+            # this sets the suspicion level of the person object and returns the suspicion level of the person
+            # to assign to the suspicion grid
+            self.suspicion_grid[i, j] = self.give_suspicion_type(self.people_grid[i, j])
+            if self.suspicion_grid[i, j] == 1:
+                self.group_1.append(self.people_grid[i, j])
+            elif self.suspicion_grid[i, j] == 2:
+                self.group_2.append(self.people_grid[i, j])
+            elif self.suspicion_grid[i, j] == 3:
+                self.group_3.append(self.people_grid[i, j])
+            elif self.suspicion_grid[i, j] == 4:
+                self.group_4.append(self.people_grid[i, j])
 
     def give_suspicion_type(self, person):
         """
