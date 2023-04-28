@@ -121,7 +121,7 @@ class Game(tk.Tk):
         with self.lock:
             # create dataframe with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
             data = {'L value': [self.L_params],
-                    ' P value': [self.grid.p],
+                    'P value': [self.grid.p],
                     'S1 value': [self.grid.s1],
                     'S2 value': [self.grid.s2],
                     'S3 value': [self.grid.s3],
@@ -491,7 +491,7 @@ def run_game(args):
 
 
 if __name__ == "__main__":
-    L_value = [0, 1, 3, 5]
+    L_value = [0, 1]
     P_value = [0.5, 0.65, 0.8, 1]
     S1 = [0.3, 0.4, 0.55]
     S2 = [0.3, 0.2, 0.1]
