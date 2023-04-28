@@ -96,15 +96,18 @@ class Game(tk.Tk):
 
         # save stats
         self.save_stats()
-
+        self.percent_received = 0
 
     def save_stats(self):
         """
-        Save the stats to a file.
+        Save the stats.csv to a file.
         """
-        with open("stats.txt", 'w') as f:
-            for key in self.stats.keys():
-                f.write(key + " " + str(self.stats[key]) + "\n")
+
+    # write to stats.csv with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
+    with open('stats.csv', 'a') as f:
+        f.write(str(self.pid) + ',' + str(self.generation_25) + ',' + str(self.generation_50) + ',' +
+                str(self.generation_75) + ',' + str(
+            self.percent_received) + '\n')  # add '\n' to create new row for each process
 
     def generate_board(self):
         """
@@ -186,8 +189,8 @@ class Game(tk.Tk):
         for x, y in self.grid.people_coords:
             if self.grid.people_grid[x, y].rumor_received:
                 rumor_received += 1
-        percent_received = round(rumor_received / total_people * 100, 2)
-        self.stat_box.insert(tk.END, "Percent of people who received the rumor: " + str(percent_received) + "%\n")
+        self.percent_received = round(rumor_received / total_people * 100, 2)
+        self.stat_box.insert(tk.END, "Percent of people who received the rumor: " + str(self.percent_received) + "%\n")
 
         # calculate which generation the population reach 25% rumor received
         if percent_received >= 25:
@@ -209,10 +212,12 @@ class Game(tk.Tk):
 
     def skip_to_end(self):
         """
-        skip to the end of the simulation
+        Skip to the end of the game.
         """
-        while self.grid.get_generation() < self.generation_limit:
+        while self.grid.generation < self.generation_limit:
             self.next_generation()
+        self.update()
+        self.save_stats()
 
 
 class Grid:
@@ -470,11 +475,11 @@ def run_game(args):
 
 
 if __name__ == "__main__":
-    L_value = [0, 1, 3, 5]
-    P_value = [0.7, 0.9]
+    L_value = [0]
+    P_value = [0.7]
     S1 = [0.3, 0.4, 0.55]
-    S2 = [0.3, 0.2, 0.0]
-    S3 = [0.3, 0.2, 0.25]
+    S2 = [0.3, 0.2, 0.1]
+    S3 = [0.3, 0.2, 0.15]
 
     games = []
     for L in L_value:
@@ -488,3 +493,16 @@ if __name__ == "__main__":
     pool.map(run_game, games)
     pool.close()
     pool.join()
+
+
+
+
+
+
+
+
+
+
+
+
+

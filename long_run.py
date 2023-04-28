@@ -77,17 +77,17 @@ class Game(tk.Tk):
         # set generation limit
         self.generation_limit = params[6]
         # first generation
-        self.stats = {}  # create an empty dictionary to store stats
+        self.stats = {}  # create an empty dictionary to store stats.csv
         self.generate_board()
         self.update()
-        time.sleep(0.5)
+        time.sleep(0.01)
         # spread rumor
         self.grid.spread_rumor()
         self.generate_board()
         self.update()
 
         while self.grid.generation <= self.generation_limit:
-            time.sleep(0.5)
+            time.sleep(0.01)
             self.next_generation()
             self.update()
 
@@ -154,11 +154,11 @@ class Game(tk.Tk):
         # Clear the contents of the stat box.
         self.stat_box.delete('1.0', tk.END)
 
-        # add grid stats to stat box
+        # add grid stats.csv to stat box
         self.stat_box.insert(tk.END, "population density: " + str(self.grid.p) + "\n")
         self.stat_box.insert(tk.END, "L param " + str(self.L_params) + "\n")
-        # add "game stats" to stat box in bold font underlined
-        self.stat_box.insert(tk.END, "Game stats:\n", 'underline')
+        # add "game stats.csv" to stat box in bold font underlined
+        self.stat_box.insert(tk.END, "Game stats.csv:\n", 'underline')
         self.stat_box.tag_configure('underline', underline=True)
 
         # compute each generation, what the percent of people who received the rumor is
