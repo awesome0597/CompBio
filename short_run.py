@@ -103,11 +103,10 @@ class Game(tk.Tk):
         Save the stats.csv to a file.
         """
 
-    # write to stats.csv with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
-    with open('stats.csv', 'a') as f:
-        f.write(str(self.pid) + ',' + str(self.generation_25) + ',' + str(self.generation_50) + ',' +
-                str(self.generation_75) + ',' + str(
-            self.percent_received) + '\n')  # add '\n' to create new row for each process
+        # write to stats.csv with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
+        with open('stats.csv', 'a') as f:
+         f.write(str(self.L_params) + ',' + str(self.grid.p) + ',' + str(self.generation_25) + ','
+                 + str(self.generation_50) + ',' + str(self.generation_75) + ',' + str(self.percent_received) + '\n')
 
     def generate_board(self):
         """
