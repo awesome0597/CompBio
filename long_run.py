@@ -215,8 +215,6 @@ class Grid:
         self.s1 = distribution_of_group_1
         self.s2 = distribution_of_group_2
         self.s3 = distribution_of_group_3
-        self.grid = np.zeros((n, n))
-        self.suspicion_grid = np.zeros((n, n))
         self.people_grid = np.empty((n, n), dtype=object)
         self.people_coords = []
         # create lists for each group
@@ -248,38 +246,19 @@ class Grid:
         create suspicion grid by iterating over the grid and assigning suspicion levels to each person
         """
         for i, j in self.people_coords:
-            # assign suspicion level to person
-            # this sets the suspicion level of the person object and returns the suspicion level of the person
-            # to assign to the suspicion grid
-            self.suspicion_grid[i, j] = self.give_suspicion_type(self.people_grid[i, j])
-            if self.suspicion_grid[i, j] == 1:
+            r = random.random()
+            if r < self.s1:
+                self.people_grid[i, j].set_suspicion(1)
                 self.group_1.append(self.people_grid[i, j])
-            elif self.suspicion_grid[i, j] == 2:
+            elif r < self.s1 + self.s2:
+                self.people_grid[i, j].set_suspicion(2)
                 self.group_2.append(self.people_grid[i, j])
-            elif self.suspicion_grid[i, j] == 3:
+            elif r < self.s1 + self.s2 + self.s3:
+                self.people_grid[i, j].set_suspicion(3)
                 self.group_3.append(self.people_grid[i, j])
-            elif self.suspicion_grid[i, j] == 4:
+            else:
+                self.people_grid[i, j].set_suspicion(4)
                 self.group_4.append(self.people_grid[i, j])
-
-    def give_suspicion_type(self, person):
-        """
-        assign suspicion level to person object
-        :param person: the person whose suspicion level is being assigned
-        :return: the suspicion level assigned to the person
-        """
-        r = random.random()
-        if r < self.s1:
-            person.set_suspicion(1)
-            return 1
-        elif r < self.s1 + self.s2:
-            person.set_suspicion(2)
-            return 2
-        elif r < self.s1 + self.s2 + self.s3:
-            person.set_suspicion(3)
-            return 3
-        else:
-            person.set_suspicion(4)
-            return 4
 
     def create_rumor_spreader(self):
         """
