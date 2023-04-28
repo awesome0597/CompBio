@@ -7,6 +7,8 @@ import time
 from tkinter import ttk as ttk
 from tkinter import Canvas
 import multiprocessing
+import pandas as pd
+import threading
 
 
 class Game(tk.Tk):
@@ -21,10 +23,10 @@ class Game(tk.Tk):
         """
 
         super().__init__()
-        self.title("I Heard a Rumor")
+        #self.title("I Heard a Rumor")
 
         # Prevent the application window from being resized.
-        self.resizable(False, False)
+        #self.resizable(False, False)
 
         # Set the height and width of the application.
         self.width_and_height = width_and_height
@@ -32,43 +34,44 @@ class Game(tk.Tk):
         self.size_factor = self.width_and_height / self.resolution
 
         # Set up the size of the canvas.
-        self.geometry(str(self.width_and_height) + "x" + str(800))
+        #self.geometry(str(self.width_and_height) + "x" + str(800))
 
         # create frame
-        self.info_frame = tk.Frame(self)
-        self.info_frame.pack()
-        self.right_frame = tk.Frame(self.info_frame)
-        self.left_frame = tk.Frame(self.info_frame)
-        self.right_frame.grid(row=0, column=1)
-        self.left_frame.grid(row=0, column=0)
-        self.canvas_frame = tk.Frame(self)
-        self.canvas_frame.pack()
+        #self.info_frame = tk.Frame(self)
+        #self.info_frame.pack()
+        #self.right_frame = tk.Frame(self.info_frame)
+        #self.left_frame = tk.Frame(self.info_frame)
+        #self.right_frame.grid(row=0, column=1)
+        #self.left_frame.grid(row=0, column=0)
+        #self.canvas_frame = tk.Frame(self)
+        #self.canvas_frame.pack()
 
         # create next generation button
-        self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
-        self.next_generation_button.grid(row=0, column=0)
+        #self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
+        #self.next_generation_button.grid(row=0, column=0)
         # create skip to end button
-        self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End", command=self.skip_to_end)
-        self.next_skip_end.grid(row=1, column=0)
+        #self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End", command=self.skip_to_end)
+        #self.next_skip_end.grid(row=1, column=0)
         # create quit button
-        self.quit_button = ttk.Button(self.left_frame, text="Quit", command=self.destroy)
-        self.quit_button.grid(row=2, column=0)
+        #self.quit_button = ttk.Button(self.left_frame, text="Quit", command=self.destroy)
+        #self.quit_button.grid(row=2, column=0)
 
         # create stat box
-        self.stat_box = tk.Text(self.right_frame, height=8, width=60)
-        self.stat_box.pack()
+        #self.stat_box = tk.Text(self.right_frame, height=8, width=60)
+        #self.stat_box.pack()
         self.generation_50 = None
         self.generation_25 = None
         self.generation_75 = None
 
         # Create the canvas widget and add it to the Tkinter application window.
-        self.canvas = Canvas(self.canvas_frame, width=self.width_and_height, height=self.width_and_height, bg='white')
-        self.canvas.pack()
+        #self.canvas = Canvas(self.canvas_frame, width=self.width_and_height, height=self.width_and_height, bg='white')
+        #self.canvas.pack()
 
         # create color index
-        self.color_index = {1: 'red', 2 / 3: 'blue', 1 / 3: 'green', 0: 'purple'}
+        #self.color_index = {1: 'red', 2 / 3: 'blue', 1 / 3: 'green', 0: 'purple'}
 
         # create grid
+        self.lock = threading.Lock()
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
         self.L_params = params[5]
         self.grid.create_grid(self.L_params)
@@ -80,73 +83,97 @@ class Game(tk.Tk):
         self.generation_limit = params[6]
         # first generation
         self.stats = {}  # create an empty dictionary to store stats
-        self.generate_board()
-        self.update()
-        time.sleep(0.5)
+        #self.generate_board()
+        #self.update()
+        #time.sleep(0.5)
         # spread rumor
         self.grid.spread_rumor()
-        self.generate_board()
-        self.update()
+        #self.generate_board()
+        #self.update()
+        self.percent_received = 0
 
-        while self.grid.generation <= self.generation_limit:
-            # time.sleep(0.5)
-            # self.next_generation()
-            self.skip_to_end()
-            self.update()
+        # while self.grid.generation <= self.generation_limit:
+        # time.sleep(0.5)
+        # self.next_generation()
+        # self.skip_to_end()
+        # self.update()
+        self.skip_to_end()
+        #self.update()
 
         # save stats
         self.save_stats()
-        self.percent_received = 0
+        # quit
+        self.destroy()
+
+    def skip_to_end(self):
+        """
+        Skip to the end of the game.
+        """
+        while self.grid.generation < self.generation_limit:
+            self.update_stat_box()
+            self.next_generation()
+        #self.update()
 
     def save_stats(self):
         """
         Save the stats.csv to a file.
         """
+        with self.lock:
+            # create dataframe with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
+            data = {'L value': [self.L_params],
+                    ' P value': [self.grid.p],
+                    'S1 value': [self.grid.s1],
+                    'S2 value': [self.grid.s2],
+                    'S3 value': [self.grid.s3],
+                    'S4 value': [round(1-self.grid.s1-self.grid.s2-self.grid.s3, 2)],
+                    '25 percentile': [self.generation_25],
+                    '50 percentile': [self.generation_50],
+                    '75 percentile': [self.generation_75],
+                    'final percentile': [self.percent_received]}
+            df = pd.DataFrame(data)
 
-        # write to stats.csv with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
-        with open('stats.csv', 'a') as f:
-         f.write(str(self.L_params) + ',' + str(self.grid.p) + ',' + str(self.generation_25) + ','
-                 + str(self.generation_50) + ',' + str(self.generation_75) + ',' + str(self.percent_received) + '\n')
+            # write to stats.csv
+            df.to_csv('stats.csv', mode='a', header=not os.path.exists('stats.csv'), index=False)
 
-    def generate_board(self):
-        """
-        Generate the board.
-        """
-        # generate the board only at the end
-        if self.grid.generation == self.generation_limit:
-            self.canvas.delete("all")
-            for x in range(0, self.resolution):
-                for y in range(0, self.resolution):
-                    realx = x * self.size_factor
-                    realy = y * self.size_factor
-                    if (x, y) in self.grid.people_coords:
-                        self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
-        self.update_stat_box()
+    # def generate_board(self):
+    #     """
+    #     Generate the board.
+    #     """
+    #     # generate the board only at the end
+    #     if self.grid.generation == self.generation_limit:
+    #         self.canvas.delete("all")
+    #         for x in range(0, self.resolution):
+    #             for y in range(0, self.resolution):
+    #                 realx = x * self.size_factor
+    #                 realy = y * self.size_factor
+    #                 if (x, y) in self.grid.people_coords:
+    #                     self.draw_square(realx, realy, self.size_factor, self.grid.people_grid[x, y])
 
-    def draw_square(self, y, x, size, person):
-        """
-        Draw a square on the canvas.
-        :param y:  y coordinate
-        :param x:   x coordinate
-        :param size:  size of square
-        :param person:  person object
-        """
-        # draw a square on the canvas, if the person has received the rumor, make the box striped
-        if person.rumor_spread:
-            self.canvas.create_rectangle(x, y, x + size, y + size,
-                                         fill=self.color_index[max(person.get_suspicion(),
-                                                                   person.get_sum_of_suspicion())],
-                                         outline='black', width=3)
-        else:
-            if person.rumor_received:
-                self.canvas.create_rectangle(x, y, x + size, y + size,
-                                             fill=self.color_index[max(person.get_suspicion(),
-                                                                       person.get_sum_of_suspicion())], outline='black')
-            else:
-                self.canvas.create_rectangle(x, y, x + size, y + size,
-                                             fill=self.color_index[max(person.get_suspicion(),
-                                                                       person.get_sum_of_suspicion())], outline='black',
-                                             stipple='questhead')
+
+    # def draw_square(self, y, x, size, person):
+    #     """
+    #     Draw a square on the canvas.
+    #     :param y:  y coordinate
+    #     :param x:   x coordinate
+    #     :param size:  size of square
+    #     :param person:  person object
+    #     """
+    #     # draw a square on the canvas, if the person has received the rumor, make the box striped
+    #     if person.rumor_spread:
+    #         self.canvas.create_rectangle(x, y, x + size, y + size,
+    #                                      fill=self.color_index[max(person.get_suspicion(),
+    #                                                                person.get_sum_of_suspicion())],
+    #                                      outline='black', width=3)
+    #     else:
+    #         if person.rumor_received:
+    #             self.canvas.create_rectangle(x, y, x + size, y + size,
+    #                                          fill=self.color_index[max(person.get_suspicion(),
+    #                                                                    person.get_sum_of_suspicion())], outline='black')
+    #         else:
+    #             self.canvas.create_rectangle(x, y, x + size, y + size,
+    #                                          fill=self.color_index[max(person.get_suspicion(),
+    #                                                                    person.get_sum_of_suspicion())], outline='black',
+    #                                          stipple='questhead')
 
     def generation(self):
         """
@@ -163,60 +190,51 @@ class Game(tk.Tk):
         :return:
         """
         self.grid.people_grid = self.generation()
-        self.canvas.delete("all")
+        #self.canvas.delete("all")
         self.grid.generation += 1
-        self.generate_board()
+        #self.generate_board()
 
     def update_stat_box(self):
         """
         update the stat box
         """
         # Clear the contents of the stat box.
-        self.stat_box.delete('1.0', tk.END)
+        #self.stat_box.delete('1.0', tk.END)
 
         # add grid stats to stat box
-        self.stat_box.insert(tk.END, "population density: " + str(self.grid.p) + "\n")
-        self.stat_box.insert(tk.END, "L param " + str(self.L_params) + "\n")
+        #self.stat_box.insert(tk.END, "population density: " + str(self.grid.p) + "\n")
+        #self.stat_box.insert(tk.END, "L param " + str(self.L_params) + "\n")
         # add "game stats" to stat box in bold font underlined
-        self.stat_box.insert(tk.END, "Game stats:\n", 'underline')
-        self.stat_box.tag_configure('underline', underline=True)
+        #self.stat_box.insert(tk.END, "Game stats:\n", 'underline')
+        #self.stat_box.tag_configure('underline', underline=True)
 
         # compute each generation, what the percent of people who received the rumor is
-        self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
+        #self.stat_box.insert(tk.END, "Generation: " + str(self.grid.generation) + "\n")
         rumor_received = 0
         total_people = len(self.grid.people_coords)
         for x, y in self.grid.people_coords:
             if self.grid.people_grid[x, y].rumor_received:
                 rumor_received += 1
         self.percent_received = round(rumor_received / total_people * 100, 2)
-        self.stat_box.insert(tk.END, "Percent of people who received the rumor: " + str(self.percent_received) + "%\n")
+        #self.stat_box.insert(tk.END, "Percent of people who received the rumor: " + str(self.percent_received) + "%\n")
 
         # calculate which generation the population reach 25% rumor received
         if percent_received >= 25:
             if self.generation_25 is None:
                 self.generation_25 = self.grid.generation
-            self.stat_box.insert(tk.END, "Generation 25% rumor received: " + str(self.generation_25) + "\n")
+            #self.stat_box.insert(tk.END, "Generation 25% rumor received: " + str(self.generation_25) + "\n")
 
         # calculate which generation the population reach 50% rumor received
         if percent_received >= 50:
             if self.generation_50 is None:
                 self.generation_50 = self.grid.generation
-            self.stat_box.insert(tk.END, "Generation 50% rumor received: " + str(self.generation_50) + "\n")
+            #self.stat_box.insert(tk.END, "Generation 50% rumor received: " + str(self.generation_50) + "\n")
 
         # calculate which generation the population reach 75% rumor received
         if percent_received >= 75:
             if self.generation_75 is None:
                 self.generation_75 = self.grid.generation
-            self.stat_box.insert(tk.END, "Generation 75% rumor received: " + str(self.generation_75) + "\n")
-
-    def skip_to_end(self):
-        """
-        Skip to the end of the game.
-        """
-        while self.grid.generation < self.generation_limit:
-            self.next_generation()
-        self.update()
-        self.save_stats()
+            #self.stat_box.insert(tk.END, "Generation 75% rumor received: " + str(self.generation_75) + "\n")
 
 
 class Grid:
@@ -449,15 +467,15 @@ class Person:
 
 
 # if __name__ == "__main__":
-#     L_value = [0, 1, 3, 5, 7, 9, 11]
-#     P_value = [0.1, 0.3, 0.5, 0.7, 0.9, 1]
-#     S1 = [0.1, 0.2, 0.3, 0.4, 0.55, 0.97]
-#     S2 = [0.1, 0.2, 0.3, 0.2, 0.0, 0.01]
-#     S3 = [0.1, 0.2, 0.3, 0.2, 0.25, 0.01]
+#     L_value = [0, 1, 3, 5]
+#     P_density = [0.5, 0.75, 1]
+#     S1 = [0.1, 0.1, 0.3, 0.4, 0.55, 0.97]
+#     S2 = [0.1, 0.4, 0.3, 0.2, 0.01, 0.01]
+#     S3 = [0.1, 0.4, 0.3, 0.2, 0.25, 0.01]
 #
 #     entries = []
 #     for L in L_value:
-#         for P in P_value:
+#         for P in P_density:
 #             for i in len(S1):
 #                 entries.append((100, P, S1[i], S2[i], S3[i]), L, 100)
 #     board = Game(entries, 600)
@@ -492,16 +510,5 @@ if __name__ == "__main__":
     pool.map(run_game, games)
     pool.close()
     pool.join()
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # stop the run
+    print("Done")
