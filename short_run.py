@@ -15,6 +15,7 @@ class Game(tk.Tk):
 
     def __init__(self, params, width_and_height=750):
         """
+        Initialize the application.
         :param params:  list of parameters
         :param width_and_height:  width and height of the application window
         """
@@ -35,14 +36,10 @@ class Game(tk.Tk):
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
         self.L_params = params[5]
         self.grid.create_grid(self.L_params)
-        # create suspicion grid
-        self.grid.create_suspicion_grid()
         # create rumor spreaders
         self.grid.create_rumor_spreader()
         # set generation limit
         self.generation_limit = params[6]
-        # first generation
-        self.stats = {}  # create an empty dictionary to store stats
 
         # spread rumor
         self.grid.spread_rumor()
@@ -173,26 +170,20 @@ class Grid:
                 if random.random() < self.p:
                     # create person object
                     self.people_grid[i, j] = Person(i, j, L)
+                    r = random.random()
+                    if r < self.s1:
+                        self.people_grid[i, j].set_suspicion(1)
+                        self.group_1.append(self.people_grid[i, j])
+                    elif r < self.s1 + self.s2:
+                        self.people_grid[i, j].set_suspicion(2)
+                        self.group_2.append(self.people_grid[i, j])
+                    elif r < self.s1 + self.s2 + self.s3:
+                        self.people_grid[i, j].set_suspicion(3)
+                        self.group_3.append(self.people_grid[i, j])
+                    else:
+                        self.people_grid[i, j].set_suspicion(4)
+                        self.group_4.append(self.people_grid[i, j])
                     self.people_coords.append((i, j))
-
-    def create_suspicion_grid(self):
-        """
-        create suspicion grid by iterating over the grid and assigning suspicion levels to each person
-        """
-        for i, j in self.people_coords:
-            r = random.random()
-            if r < self.s1:
-                self.people_grid[i, j].set_suspicion(1)
-                self.group_1.append(self.people_grid[i, j])
-            elif r < self.s1 + self.s2:
-                self.people_grid[i, j].set_suspicion(2)
-                self.group_2.append(self.people_grid[i, j])
-            elif r < self.s1 + self.s2 + self.s3:
-                self.people_grid[i, j].set_suspicion(3)
-                self.group_3.append(self.people_grid[i, j])
-            else:
-                self.people_grid[i, j].set_suspicion(4)
-                self.group_4.append(self.people_grid[i, j])
 
     def create_rumor_spreader(self):
         """
@@ -341,7 +332,7 @@ class Person:
 
 def run_game(args):
     entries = args
-    # print proccess id
+    # print process id
     print("Process id: ", os.getpid())
     board = Game(entries)
     board.mainloop()
