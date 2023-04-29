@@ -339,8 +339,8 @@ def run_game(args):
 
 
 if __name__ == "__main__":
-    L_value = [1]
-    P_value = [0.8]
+    L_value = [0, 1, 3, 5]
+    P_value = [0.5, 0.65, 0.8, 1]
     S1 = [0.3, 0.4, 0.55]
     S2 = [0.3, 0.2, 0.1]
     S3 = [0.3, 0.2, 0.15]
@@ -349,8 +349,9 @@ if __name__ == "__main__":
     for L in L_value:
         for P in P_value:
             for i in range(len(S1)):
-                entries = [100, P, S1[i], S2[i], S3[i], L, 100]
-                games.append(entries)
+                for j in range(10):
+                    entries = [100, P, S1[i], S2[i], S3[i], L, 100]
+                    games.append(entries)
 
     # Create a pool of processes and run the game for each set of entries
     pool = multiprocessing.Pool()
