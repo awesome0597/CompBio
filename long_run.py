@@ -42,9 +42,6 @@ class Game(tk.Tk):
         self.canvas_frame = tk.Frame(self)
         self.canvas_frame.pack()
 
-        # create next generation button
-        self.next_generation_button = ttk.Button(self.left_frame, text="Next Generation", command=self.next_generation)
-        self.next_generation_button.grid(row=0, column=0)
         # create skip to end button
         self.next_skip_end = ttk.Button(self.left_frame, text="Skip to End", command=self.skip_to_end)
         self.next_skip_end.grid(row=1, column=0)
@@ -77,7 +74,7 @@ class Game(tk.Tk):
         # first generation
         self.generate_board()
         self.update()
-        time.sleep(0.01)
+        time.sleep(5)
         # spread rumor
         self.grid.spread_rumor()
         self.generate_board()
