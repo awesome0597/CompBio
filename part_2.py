@@ -2,29 +2,21 @@ import copy
 import os
 import numpy as np
 import random
-import tkinter as tk
 import multiprocessing
 import pandas as pd
 import threading
 
 
-class Game(tk.Tk):
+class Game:
     """
     The main application window.
     """
 
-    def __init__(self, params, width_and_height=750):
+    def __init__(self, params):
         """
         :param params:  list of parameters
         :param width_and_height:  width and height of the application window
         """
-
-        super().__init__()
-
-        # Set the height and width of the application.
-        self.width_and_height = width_and_height
-        self.resolution = params[0]
-        self.size_factor = self.width_and_height / self.resolution
 
         self.generation_50 = None
         self.generation_25 = None
@@ -34,21 +26,23 @@ class Game(tk.Tk):
         self.lock = threading.Lock()
         self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
         self.L_params = params[5]
-        self.grid.create_grid(self.L_params)
+        self.grid.spiral_grid(0, 0, params[0], "right", self.L_params)
+        self.grid.fill_grid(self.L_params)
         # create rumor spreaders
         self.grid.create_rumor_spreader()
         # set generation limit
         self.generation_limit = params[6]
+        # first generation
+        self.stats = {}  # create an empty dictionary to store stats
 
-        # spread rumor
         self.grid.spread_rumor()
+
         self.percent_received = 0
+
         self.skip_to_end()
 
         # save stats
         self.save_stats()
-        # quit
-        self.destroy()
 
     def skip_to_end(self):
         """
@@ -57,7 +51,6 @@ class Game(tk.Tk):
         while self.grid.generation < self.generation_limit:
             self.update_stat_box()
             self.next_generation()
-        # self.update()
 
     def save_stats(self):
         """
@@ -95,15 +88,12 @@ class Game(tk.Tk):
         :return:
         """
         self.grid.people_grid = self.generation()
-        # self.canvas.delete("all")
         self.grid.generation += 1
-        # self.generate_board()
 
     def update_stat_box(self):
         """
         update the stat box
         """
-        # calculate the percent of people who received the rumor
         rumor_received = 0
         total_people = len(self.grid.people_coords)
         for x, y in self.grid.people_coords:
@@ -115,11 +105,13 @@ class Game(tk.Tk):
         if self.percent_received >= 25:
             if self.generation_25 is None:
                 self.generation_25 = self.grid.generation
+            # self.stat_box.insert(tk.END, "Generation 25% rumor received: " + str(self.generation_25) + "\n")
 
         # calculate which generation the population reach 50% rumor received
         if self.percent_received >= 50:
             if self.generation_50 is None:
                 self.generation_50 = self.grid.generation
+            # self.stat_box.insert(tk.END, "Generation 50% rumor received: " + str(self.generation_50) + "\n")
 
         # calculate which generation the population reach 75% rumor received
         if self.percent_received >= 75:
@@ -136,10 +128,6 @@ class Grid:
     def __init__(self, n, p, distribution_of_group_1, distribution_of_group_2, distribution_of_group_3):
         """
         :param n: size of grid
-        :param p: probability of a person existing in a cell
-        :param distribution_of_group_1:  distribution of suspicion levels for group 1
-        :param distribution_of_group_2: distribution of suspicion levels for group 2
-        :param distribution_of_group_3: distribution of suspicion levels for group 3
         """
         self.n = n
         self.p = p
@@ -161,29 +149,68 @@ class Grid:
         # generation counter
         self.generation = 0
 
-    def create_grid(self, L):
-        """
-        create grid of people by iterating over the grid and assigning people to each cell with probability p
-        """
+    def spiral_grid(self, x, y, length, direction, L):
+        count = 0
+        for i in range(5050):
+            for k in range(length):
+                if count == 0:
+                    self.people_grid[x, y] = Person(x, y, L)
+                    self.people_coords.append((x, y))
+                    self.people_grid[x, y].set_suspicion(4)
+                    self.group_4.append(self.people_grid[x, y])
+                    count += 1
+                else:
+                    self.people_grid[x, y] = 0
+                    count = 0
+
+                if direction == "right":
+                    if k < length - 1:
+                        y += 1
+                    else:
+                        direction = "down"
+                        x += 1
+                        length -= 2
+                elif direction == "down":
+                    if k < length - 1:
+                        x += 1
+                    else:
+                        direction = "left"
+                        y -= 1
+                        length -= 2
+                elif direction == "left":
+                    if k < length - 1:
+                        y -= 1
+                    else:
+                        direction = "up"
+                        x -= 1
+                        length -= 2
+                elif direction == "up":
+                    if k < length - 1:
+                        x -= 1
+                    else:
+                        direction = "right"
+                        y += 1
+                        length -= 2
+
+    def fill_grid(self, L):
+        count = 1
         for i in range(self.n):
             for j in range(self.n):
-                if random.random() < self.p:
-                    # create person object
+                if self.people_grid[i, j] is None:
                     self.people_grid[i, j] = Person(i, j, L)
-                    r = random.random()
-                    if r < self.s1:
+                    self.people_coords.append((i, j))
+                    if count == 1:
                         self.people_grid[i, j].set_suspicion(1)
                         self.group_1.append(self.people_grid[i, j])
-                    elif r < self.s1 + self.s2:
+                        count += 1
+                    elif count == 2:
                         self.people_grid[i, j].set_suspicion(2)
                         self.group_2.append(self.people_grid[i, j])
-                    elif r < self.s1 + self.s2 + self.s3:
+                        count += 1
+                    else:
                         self.people_grid[i, j].set_suspicion(3)
                         self.group_3.append(self.people_grid[i, j])
-                    else:
-                        self.people_grid[i, j].set_suspicion(4)
-                        self.group_4.append(self.people_grid[i, j])
-                    self.people_coords.append((i, j))
+                        count = 1
 
     def create_rumor_spreader(self):
         """
@@ -303,7 +330,7 @@ class Person:
                     for i in range(-1, 2):
                         for j in range(-1, 2):
                             if 0 <= location[0] + i < n and 0 <= location[1] + j < n and not (i == 0 and j == 0) and \
-                                    grid[location[0] + i, location[1] + j] is not None:
+                                    grid[location[0] + i, location[1] + j] != 0:
                                 grid[location[0] + i, location[1] + j].receive_rumor()
 
                     grid[location[0], location[1]].rumor_spread = True
@@ -330,37 +357,21 @@ class Person:
                 grid[location[0], location[1]].rumor_spread = False
 
 
-# if __name__ == "__main__":
-#     L_value = [0, 1, 3, 5]
-#     P_density = [0.5, 0.75, 1]
-#     S1 = [0.1, 0.1, 0.3, 0.4, 0.55, 0.97]
-#     S2 = [0.1, 0.4, 0.3, 0.2, 0.01, 0.01]
-#     S3 = [0.1, 0.4, 0.3, 0.2, 0.25, 0.01]
-#
-#     entries = []
-#     for L in L_value:
-#         for P in P_density:
-#             for i in len(S1):
-#                 entries.append((100, P, S1[i], S2[i], S3[i]), L, 100)
-#     board = Game(entries, 600)
-#     board.mainloop()
-
 # Define a function to run the game
 def run_game(args):
     entries = args
-    # print process id
+    # print proccess id
     print("Process id: ", os.getpid())
 
     board = Game(entries)
-    board.mainloop()
 
 
 if __name__ == "__main__":
-    L_value = [0, 1, 3, 5]
-    P_value = [0.5, 0.65, 0.8, 1]
-    S1 = [0.3, 0.4, 0.55]
-    S2 = [0.3, 0.2, 0.1]
-    S3 = [0.3, 0.2, 0.15]
+    L_value = [3]
+    P_value = [0.9]
+    S1 = [0.3]
+    S2 = [0.28]
+    S3 = [0.28]
 
     games = []
     for L in L_value:
