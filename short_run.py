@@ -57,7 +57,6 @@ class Game(tk.Tk):
         while self.grid.generation < self.generation_limit:
             self.update_stat_box()
             self.next_generation()
-        # self.update()
 
     def save_stats(self):
         """
@@ -68,9 +67,6 @@ class Game(tk.Tk):
             data = {'L value': [self.L_params],
                     'P value': [self.grid.p],
                     'S1 value': [self.grid.s1],
-                    'S2 value': [self.grid.s2],
-                    'S3 value': [self.grid.s3],
-                    'S4 value': [round(1 - self.grid.s1 - self.grid.s2 - self.grid.s3, 2)],
                     '25 percentile': [self.generation_25],
                     '50 percentile': [self.generation_50],
                     '75 percentile': [self.generation_75],
@@ -356,7 +352,7 @@ def run_game(args):
 
 
 if __name__ == "__main__":
-    L_value = [0, 1, 3, 5]
+    L_value = [3, 5]
     P_value = [0.5, 0.65, 0.8, 1]
     S1 = [0.3, 0.4, 0.55]
     S2 = [0.3, 0.2, 0.1]
@@ -377,3 +373,4 @@ if __name__ == "__main__":
     pool.join()
     # stop the run
     print("Done")
+
