@@ -1,5 +1,5 @@
 # Rumor Spreader
-
+Part A:<br>
 The Rumor Spreader program simulates the spread of a rumor through a grid. The program has two separate modes the users
 can run, each mode has its unique features:
 
@@ -25,6 +25,20 @@ To be able to differentiate between people who heard the rumor and those who did
 filling the square with the respective color for those who heard the rumor, and for those who didn’t their square is 
 filled with a head figure and a dotted question mark.<br>
 A person who's spreading the rumor is marked with wider edges. <br>
+
+Part B:
+A specific run of the rumor spreader program that positions the S4 group and empty spaces in the shape of spiral to create a slow spreading rate for the rumor.
+The set parameters for the run:<br>
+* Matrix Size: 100*100
+* P = 0.9
+* S1 = 0.3
+* S2 = 0.28
+* S3 = 0.28
+* S4 = 0.14
+* L = 3
+MAX_GEN = 100.<br>
+This program can also be run in two modes like the first part.
+
 
 
 
