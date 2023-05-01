@@ -1,4 +1,8 @@
 import copy
+import multiprocessing
+import os
+import threading
+import pandas as pd
 import numpy as np
 import random
 import tkinter as tk
@@ -7,7 +11,7 @@ from tkinter import ttk as ttk
 from tkinter import Canvas
 
 
-class Game(tk.Tk):
+class LongGame(tk.Tk):
     """
     The main application window.
     """
@@ -194,6 +198,119 @@ class Game(tk.Tk):
         """
         while self.grid.get_generation() < self.generation_limit:
             self.next_generation()
+
+
+class ShortGame:
+    """
+    The main application window.
+    """
+
+    def __init__(self, params):
+        """
+        :param params:  list of parameters
+        :param width_and_height:  width and height of the application window
+        """
+
+        self.generation_50 = None
+        self.generation_25 = None
+        self.generation_75 = None
+
+        # create grid
+        self.lock = threading.Lock()
+        self.grid = Grid(params[0], params[1], params[2], params[3], params[4])
+        self.L_params = params[5]
+        self.grid.spiral_grid(0, 0, params[0], "right", self.L_params)
+        self.grid.fill_grid(self.L_params)
+        # create rumor spreaders
+        self.grid.create_rumor_spreader()
+        # set generation limit
+        self.generation_limit = params[6]
+        # first generation
+        self.stats = {}  # create an empty dictionary to store stats
+
+        self.grid.spread_rumor()
+
+        self.percent_received = 0
+
+        self.skip_to_end()
+
+        # save stats
+        self.save_stats()
+
+    def skip_to_end(self):
+        """
+        Skip to the end of the game.
+        """
+        while self.grid.generation < self.generation_limit:
+            self.update_stat_box()
+            self.next_generation()
+
+    def save_stats(self):
+        """
+        Save the stats.csv to a file.
+        """
+        with self.lock:
+            # create dataframe with columns PID, 25 percentile, 50 percentile, 75 percentile and final percentile
+            data = {'L value': [self.L_params],
+                    'P value': [self.grid.p],
+                    'S1 value': [self.grid.s1],
+                    'S2 value': [self.grid.s2],
+                    'S3 value': [self.grid.s3],
+                    'S4 value': [round(1 - self.grid.s1 - self.grid.s2 - self.grid.s3, 2)],
+                    '25 percentile': [self.generation_25],
+                    '50 percentile': [self.generation_50],
+                    '75 percentile': [self.generation_75],
+                    'final percentile': [self.percent_received]}
+            df = pd.DataFrame(data)
+
+            # write to stats.csv
+            df.to_csv('stats.csv', mode='a', header=not os.path.exists('stats.csv'), index=False)
+
+    def generation(self):
+        """
+        copy the people grid and iterate over the copy to create the next generation
+        """
+        copy_people_grid = copy.deepcopy(self.grid.people_grid)
+        for i, j in self.grid.people_coords:
+            self.grid.people_grid[i, j].spread(copy_people_grid, self.grid.n)
+        return copy_people_grid
+
+    def next_generation(self):
+        """
+        create next generation of people
+        :return:
+        """
+        self.grid.people_grid = self.generation()
+        self.grid.generation += 1
+
+    def update_stat_box(self):
+        """
+        update the stat box
+        """
+        rumor_received = 0
+        total_people = len(self.grid.people_coords)
+        for x, y in self.grid.people_coords:
+            if self.grid.people_grid[x, y].rumor_received:
+                rumor_received += 1
+        self.percent_received = round(rumor_received / total_people * 100, 2)
+
+        # calculate which generation the population reach 25% rumor received
+        if self.percent_received >= 25:
+            if self.generation_25 is None:
+                self.generation_25 = self.grid.generation
+            # self.stat_box.insert(tk.END, "Generation 25% rumor received: " + str(self.generation_25) + "\n")
+
+        # calculate which generation the population reach 50% rumor received
+        if self.percent_received >= 50:
+            if self.generation_50 is None:
+                self.generation_50 = self.grid.generation
+            # self.stat_box.insert(tk.END, "Generation 50% rumor received: " + str(self.generation_50) + "\n")
+
+        # calculate which generation the population reach 75% rumor received
+        if self.percent_received >= 75:
+            if self.generation_75 is None:
+                self.generation_75 = self.grid.generation
+            # self.stat_box.insert(tk.END, "Generation 75% rumor received: " + str(self.generation_75) + "\n")
 
 
 class Grid:
@@ -439,11 +556,47 @@ class Person:
                 grid[location[0], location[1]].rumor_spread = False
 
 
-def submit():
+# Define a function to run the game
+def run_game(args):
+    entries = args
+    # print proccess id
+    print("Process id: ", os.getpid())
+
+    board = ShortGame(entries)
+
+
+def submit(root, shortRun):
+    root.destroy()
     params = [100, 0.9, 0.3, 0.28, 0.28, 3, 100]
-    board = Game(params, 600)
-    board.mainloop()
+    if shortRun:
+        games = []
+        for i in range(10):
+            games.append(params)
+            # Create a pool of processes and run the game for each set of entries
+            pool = multiprocessing.Pool()
+            pool.map(run_game, games)
+            pool.close()
+            pool.join()
+            # stop the run
+            print("Done")
+    else:
+        board = LongGame(params, 600)
+        board.mainloop()
+
+
+def start_menu():
+    """
+    function that creates the start menu
+    """
+    root = tk.Tk()
+    root.title("We're Spiralling?")
+    root.geometry("300x150")
+
+    ttk.Button(root, text='Quit', command=root.destroy).grid(row=5, column=1, sticky=tk.E, pady=2)
+    ttk.Button(root, text='Simulater', command=lambda: submit(root, False)).grid(row=3, column=1, sticky=tk.E, pady=2)
+    ttk.Button(root, text='Research', command=lambda: submit(root, True)).grid(row=4, column=1, sticky=tk.E, pady=2)
+    root.mainloop()
 
 
 if __name__ == "__main__":
-    submit()
+    start_menu()
